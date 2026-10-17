@@ -1,14 +1,18 @@
 # main.py — FastAPI app: receives a scan video, extracts frames with OpenCV, passes them to the AI
+import logging
 import os
 import tempfile
+import time
 import uuid
 
-from fastapi import Body, FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.concurrency import run_in_threadpool
 
 from . import config
-from .ai_client import AIError, analyze_floor_plan, analyze_frames
+from .ai_client import AIError, analyze_frames
 from .frame_extractor import VideoReadError, extract_frames
 
+log = logging.getLogger("uvicorn.error")
 app = FastAPI(title="WindNWater scan API")
 
 
@@ -19,6 +23,7 @@ def health() -> dict:
 
 @app.post("/scans")
 async def create_scan(video: UploadFile = File(...)) -> dict:
+    started = time.perf_counter()
     suffix = os.path.splitext(video.filename or "")[1] or ".mov"
     max_bytes = config.MAX_UPLOAD_MB * 1024 * 1024
     written = 0
@@ -36,8 +41,10 @@ async def create_scan(video: UploadFile = File(...)) -> dict:
             os.unlink(path)
             raise
 
+    saved = time.perf_counter()
     try:
-        extraction = extract_frames(path)
+        # OpenCV decoding is blocking; run it off the event loop so other requests aren't stalled
+        extraction = await run_in_threadpool(extract_frames, path)
     except VideoReadError as error:
         raise HTTPException(422, str(error))
     finally:
@@ -46,10 +53,19 @@ async def create_scan(video: UploadFile = File(...)) -> dict:
     if not extraction.frames:
         raise HTTPException(422, "No usable frames found. Move more slowly and keep the room well lit.")
 
+    extracted = time.perf_counter()
     try:
         analysis = await analyze_frames(extraction.frames)
     except AIError as error:
         raise HTTPException(error.status_code, str(error))
+
+    done = time.perf_counter()
+    timings = {
+        "receive_s": round(saved - started, 2),
+        "extract_s": round(extracted - saved, 2),
+        "ai_s": round(done - extracted, 2),
+    }
+    log.info("scan: %.1f s of video -> %d frames | %s", extraction.duration_sec, len(extraction.frames), timings)
 
     return {
         "scan_id": uuid.uuid4().hex,
@@ -59,16 +75,8 @@ async def create_scan(video: UploadFile = File(...)) -> dict:
             {"index": f.index, "timestamp_sec": f.timestamp_sec, "sharpness": f.sharpness}
             for f in extraction.frames
         ],
+        "preview_image": f"data:image/jpeg;base64,{extraction.frames[-1].jpeg_base64}",
+        "timings": timings,
         "analysis": analysis,
     }
 
-
-@app.post("/floor-plans")
-async def analyze_plan(floor_plan: dict = Body(...)) -> dict:
-    if not isinstance(floor_plan.get("floor"), dict) or not isinstance(floor_plan.get("walls"), list):
-        raise HTTPException(422, "Expected a floor plan with 'floor' and 'walls'.")
-    try:
-        analysis = await analyze_floor_plan(floor_plan)
-    except AIError as error:
-        raise HTTPException(error.status_code, str(error))
-    return {"analysis": analysis}

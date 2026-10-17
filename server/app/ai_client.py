@@ -1,4 +1,4 @@
-# ai_client.py — the single place where extracted frames and floor plans are sent to the AI model
+# ai_client.py — the single place where extracted frames are sent to the AI model
 import json
 import re
 
@@ -61,30 +61,24 @@ async def _post(client: httpx.AsyncClient, content: list[dict]) -> httpx.Respons
     )
 
 
-async def analyze_frames(frames: list[ExtractedFrame], floor_plan: dict | None = None) -> dict:
-    """Send the room photos and/or floor plan to the AI and return a validated feng shui analysis."""
+async def analyze_frames(frames: list[ExtractedFrame]) -> dict:
+    """Send the room photos to the AI and return a validated feng shui analysis."""
     if not config.AI_API_KEY:
         raise AIError("No AI key is set. Add AI_API_KEY (your OpenRouter key) to your .env file.", 503)
-    if not frames and not floor_plan:
+    if not frames:
         raise AIError("Nothing to analyze.", 422)
 
     frames = _evenly_spaced(frames, config.AI_MAX_IMAGES)
     try:
         async with httpx.AsyncClient(timeout=config.AI_TIMEOUT_SEC) as client:
-            response = await _post(client, build_user_content(frames, floor_plan))
-            # Text-only models reject image input. Retry with just the floor plan if we have one.
-            if response.status_code == 400 and frames and floor_plan:
-                response = await _post(client, build_user_content(frames, floor_plan, include_images=False))
+            response = await _post(client, build_user_content(frames))
     except httpx.TimeoutException as error:
         raise AIError("The AI took too long to respond.", 504) from error
     except httpx.HTTPError as error:
         raise AIError(f"Could not reach the AI service: {error}") from error
 
-    if response.status_code == 400 and frames and not floor_plan:
-        raise AIError(
-            "The AI model rejected the photos. Use a vision-capable model (AI_MODEL), "
-            "or scan with the floor plan option instead."
-        )
+    if response.status_code == 400:
+        raise AIError("The AI model rejected the photos. Use a vision-capable model (AI_MODEL).")
     if response.status_code in (401, 403):
         raise AIError("The AI service rejected the API key.", 502)
     if response.status_code == 429:
@@ -107,6 +101,3 @@ async def analyze_frames(frames: list[ExtractedFrame], floor_plan: dict | None =
     except ValidationError as error:
         raise AIError(f"The AI reply was missing required fields: {error.errors()[0]['loc']}") from error
 
-
-async def analyze_floor_plan(floor_plan: dict) -> dict:
-    return await analyze_frames([], floor_plan)

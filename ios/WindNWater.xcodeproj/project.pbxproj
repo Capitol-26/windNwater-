@@ -7,40 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A74D58789BF7861F00E18EC /* FloorPlanSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25761C2C51DCC373D19F2C8D /* FloorPlanSerializer.swift */; };
 		0C80B921A6F3F58F76C31292 /* libPods-WindNWater.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-WindNWater.a */; };
-		0E6809A6EB0B60FD119A8175 /* FloorPlanGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E4E6C190A7381996B912513 /* FloorPlanGeometry.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		31E9300B9E3F2264896A4546 /* RoomScanModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 29CE4FA41B3107C5B44998C6 /* RoomScanModule.m */; };
-		4EA9FFBD9C93BEB2ECCF53BF /* RoomScanModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 238A9ECAC14E610455F67193 /* RoomScanModule.swift */; };
+		2C8456F66F34B8A02443BFC0 /* FloorHomography.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AA4B44488BDC626AA575C1 /* FloorHomography.m */; };
+		40996A2CDE6929E8658DA2B2 /* Homography.c in Sources */ = {isa = PBXBuildFile; fileRef = 3E5D94E62EE73D346EAAE973 /* Homography.c */; };
+		457C28C6DE99408E87A3A171 /* InstrumentSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 04D2979B04D34FDB9226DC22 /* InstrumentSans-Medium.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EE2CA45674006654EF /* SceneDelegate.swift */; };
+		78CD3146834344AC91A78678 /* InstrumentSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B2A8A7A92D424D809E6DD591 /* InstrumentSans-Regular.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		8B5BEF7DBD23E3611485EA69 /* GuidedScanViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B5592E94AE58D78DA57372 /* GuidedScanViewController.swift */; };
 		A65D1639B68A4E3280EBFC9A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		E1878A59B224CAD756C0E0F6 /* ScanDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25BE05603E7E43A3C10F77FD /* ScanDraft.swift */; };
-		FC66ACAB03B3C901F137A6BF /* ARSupportChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B9CC79BA126926DFD86163 /* ARSupportChecker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0E4E6C190A7381996B912513 /* FloorPlanGeometry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FloorPlanGeometry.swift; sourceTree = "<group>"; };
+		04D2979B04D34FDB9226DC22 /* InstrumentSans-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "InstrumentSans-Medium.ttf"; path = "../assets/fonts/InstrumentSans-Medium.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* WindNWater.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WindNWater.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = WindNWater/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = WindNWater/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = WindNWater/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		238A9ECAC14E610455F67193 /* RoomScanModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomScanModule.swift; sourceTree = "<group>"; };
-		25761C2C51DCC373D19F2C8D /* FloorPlanSerializer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FloorPlanSerializer.swift; sourceTree = "<group>"; };
-		25BE05603E7E43A3C10F77FD /* ScanDraft.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanDraft.swift; sourceTree = "<group>"; };
-		29CE4FA41B3107C5B44998C6 /* RoomScanModule.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RoomScanModule.m; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-WindNWater.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WindNWater.debug.xcconfig"; path = "Target Support Files/Pods-WindNWater/Pods-WindNWater.debug.xcconfig"; sourceTree = "<group>"; };
+		3E5D94E62EE73D346EAAE973 /* Homography.c */ = {isa = PBXFileReference; includeInIndex = 1; path = Homography.c; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-WindNWater.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WindNWater.release.xcconfig"; path = "Target Support Files/Pods-WindNWater/Pods-WindNWater.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-WindNWater.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WindNWater.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		63B9CC79BA126926DFD86163 /* ARSupportChecker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ARSupportChecker.swift; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = WindNWater/AppDelegate.swift; sourceTree = "<group>"; };
 		761780EE2CA45674006654EF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = WindNWater/SceneDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = WindNWater/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		B8B5592E94AE58D78DA57372 /* GuidedScanViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidedScanViewController.swift; sourceTree = "<group>"; };
-		DFD8D5686445506199A21ED2 /* WindNWater-Bridging-Header.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "WindNWater/WindNWater-Bridging-Header.h"; sourceTree = "<group>"; };
+		B1AA4B44488BDC626AA575C1 /* FloorHomography.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FloorHomography.m; sourceTree = "<group>"; };
+		B2A8A7A92D424D809E6DD591 /* InstrumentSans-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "InstrumentSans-Regular.ttf"; path = "../assets/fonts/InstrumentSans-Regular.ttf"; sourceTree = "<group>"; };
+		D836C424EF2C3EA0530DA607 /* Homography.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = Homography.h; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -65,8 +59,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
-				509278B593CBE4B53A89CD26 /* AR */,
-				DFD8D5686445506199A21ED2 /* WindNWater-Bridging-Header.h */,
+				C8B138AC07A10F18EE621F26 /* Floor */,
 			);
 			name = WindNWater;
 			sourceTree = "<group>";
@@ -78,21 +71,6 @@
 				5DCACB8F33CDC322A6C60F78 /* libPods-WindNWater.a */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		509278B593CBE4B53A89CD26 /* AR */ = {
-			isa = PBXGroup;
-			children = (
-				63B9CC79BA126926DFD86163 /* ARSupportChecker.swift */,
-				29CE4FA41B3107C5B44998C6 /* RoomScanModule.m */,
-				238A9ECAC14E610455F67193 /* RoomScanModule.swift */,
-				0E4E6C190A7381996B912513 /* FloorPlanGeometry.swift */,
-				25BE05603E7E43A3C10F77FD /* ScanDraft.swift */,
-				25761C2C51DCC373D19F2C8D /* FloorPlanSerializer.swift */,
-				B8B5592E94AE58D78DA57372 /* GuidedScanViewController.swift */,
-			);
-			name = AR;
-			path = WindNWater/AR;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -110,6 +88,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				C2CE8B69C2F2477FA3D0B883 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -131,6 +110,27 @@
 				5709B34CF0A7D63546082F79 /* Pods-WindNWater.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		C2CE8B69C2F2477FA3D0B883 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B2A8A7A92D424D809E6DD591 /* InstrumentSans-Regular.ttf */,
+				04D2979B04D34FDB9226DC22 /* InstrumentSans-Medium.ttf */,
+			);
+			name = Resources;
+			path = "";
+			sourceTree = "<group>";
+		};
+		C8B138AC07A10F18EE621F26 /* Floor */ = {
+			isa = PBXGroup;
+			children = (
+				3E5D94E62EE73D346EAAE973 /* Homography.c */,
+				B1AA4B44488BDC626AA575C1 /* FloorHomography.m */,
+				D836C424EF2C3EA0530DA607 /* Homography.h */,
+			);
+			name = Floor;
+			path = WindNWater/Floor;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -196,6 +196,8 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				A65D1639B68A4E3280EBFC9A /* PrivacyInfo.xcprivacy in Resources */,
+				78CD3146834344AC91A78678 /* InstrumentSans-Regular.ttf in Resources */,
+				457C28C6DE99408E87A3A171 /* InstrumentSans-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,13 +228,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-WindNWater/Pods-WindNWater-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-WindNWater/Pods-WindNWater-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -269,13 +267,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-WindNWater/Pods-WindNWater-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-WindNWater/Pods-WindNWater-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -291,13 +285,8 @@
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */,
-				FC66ACAB03B3C901F137A6BF /* ARSupportChecker.swift in Sources */,
-				31E9300B9E3F2264896A4546 /* RoomScanModule.m in Sources */,
-				4EA9FFBD9C93BEB2ECCF53BF /* RoomScanModule.swift in Sources */,
-				0E6809A6EB0B60FD119A8175 /* FloorPlanGeometry.swift in Sources */,
-				E1878A59B224CAD756C0E0F6 /* ScanDraft.swift in Sources */,
-				0A74D58789BF7861F00E18EC /* FloorPlanSerializer.swift in Sources */,
-				8B5BEF7DBD23E3611485EA69 /* GuidedScanViewController.swift in Sources */,
+				40996A2CDE6929E8658DA2B2 /* Homography.c in Sources */,
+				2C8456F66F34B8A02443BFC0 /* FloorHomography.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,7 +320,6 @@
 				PRODUCT_NAME = WindNWater;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SWIFT_OBJC_BRIDGING_HEADER = "WindNWater/WindNWater-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -365,7 +353,6 @@
 				PRODUCT_NAME = WindNWater;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SWIFT_OBJC_BRIDGING_HEADER = "WindNWater/WindNWater-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";

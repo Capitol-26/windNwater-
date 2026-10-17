@@ -1,18 +1,13 @@
-// Earthen palette: clay, moss, sand, espresso
+// Palette from the Figma design: warm sand ground with terracotta and sage blobs
 export const colors = {
-  cream: '#F4EDE0',
-  sand: '#E6D8C0',
-  sandDeep: '#D4C2A3',
-  clay: '#B8603E',
-  clayDark: '#8F4528',
-  moss: '#5F6B45',
-  sage: '#A3AB86',
-  espresso: '#2A1F18',
-  bark: '#4A3828',
-  stone: '#8C7B68',
-  scrim: 'rgba(42,31,24,0.55)',
-  hairline: 'rgba(74,56,40,0.16)',
-  hairlineLight: 'rgba(244,237,224,0.28)',
+  sand: '#E7B573',
+  clay: '#C36241',
+  sage: '#7A8B7B',
+  ink: '#000000',
+  paper: '#FFFFFF',
+  inkSoft: 'rgba(0,0,0,0.62)',
+  track: 'rgba(0,0,0,0.12)',
+  dot: 'rgba(255,255,255,0.5)',
 } as const;
 
 // One earthen hue per feng shui element

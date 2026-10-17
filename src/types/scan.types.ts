@@ -12,5 +12,6 @@ export type ScanAnalysisResponse = {
   frame_count: number;
   duration_sec: number;
   frames: ScanFrameInfo[];
+  preview_image: string; // data URI of the last frame of the recording
   analysis: FengShuiAnalysis;
 };

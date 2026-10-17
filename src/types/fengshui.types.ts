@@ -12,15 +12,39 @@ export type Recommendation = {
   priority: 'high' | 'medium' | 'low';
 };
 
+// All distances are metres, measured from the room's north-west corner (x runs east, y runs south)
+export type Wall = 'north' | 'east' | 'south' | 'west';
+
+export type Opening = {
+  kind: 'door' | 'window';
+  wall: Wall;
+  offset: number; // from the wall's start (west or north end) to the opening's centre
+  width: number;
+};
+
+export type LayoutItem = {
+  name: string;
+  x: number; // centre
+  y: number; // centre
+  width: number;
+  depth: number;
+};
+
+export type OptimalItem = LayoutItem & { reason: string };
+
+export type RoomLayout = {
+  width: number;
+  length: number;
+  openings: Opening[];
+  items: LayoutItem[];
+  optimal_items: OptimalItem[]; // the same pieces as `items`, in the same order
+};
+
 export type FengShuiAnalysis = {
   overall_score: number; // 0-100
   room_type: string;
   summary: string;
-  confidence: 'low' | 'medium' | 'high';
-  basis: 'images' | 'floor_plan' | 'both';
-  chi_flow: { score: number; summary: string; issues: string[] };
   elements: Record<ElementName, ElementShare>;
-  dominant_element: ElementName;
-  weakest_element: ElementName;
   recommendations: Recommendation[];
+  layout?: RoomLayout | null; // missing when the photos show too little of the room
 };

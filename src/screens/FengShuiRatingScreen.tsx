@@ -1,99 +1,119 @@
-// FengShuiRatingScreen.tsx — shows the AI feng shui rating, element balance and chi flow
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+// FengShuiRatingScreen.tsx — the score over the room's last frame, with the full analysis behind "see more"
+import { useRef, useState } from 'react';
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { CaretUp } from 'phosphor-react-native';
+import BackButton from '../components/common/BackButton';
 import Button from '../components/common/Button';
 import ScreenContainer from '../components/common/ScreenContainer';
+import ViewfinderFrame from '../components/common/ViewfinderFrame';
+import ScoreBar from '../components/fengshui/ScoreBar';
 import ElementBalance from '../components/fengshui/ElementBalance';
 import IssueListItem from '../components/fengshui/IssueListItem';
-import RatingGauge from '../components/fengshui/RatingGauge';
 import { RootStackParamList } from '../navigation/navigation.types';
 import { colors } from '../theme/colors';
-import { spacing, radii } from '../theme/spacing';
+import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
 export default function FengShuiRatingScreen({
   route,
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'FengShuiRating'>) {
-  const { analysis } = route.params;
-  const chi = analysis.chi_flow;
+  const { analysis, previewImage } = route.params;
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const openLayoutAfterClose = useRef(false);
+  const { layout } = analysis;
+  const score = Math.round(Math.min(100, Math.max(0, analysis.overall_score)));
 
   return (
-    <ScreenContainer>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <View style={styles.eyebrow}>
-          <Text style={styles.eyebrowText}>
-            {analysis.room_type} · {analysis.confidence} confidence
-          </Text>
-        </View>
-        <Text style={styles.title}>Your room's feng shui</Text>
+    <ScreenContainer variant="result">
+      <BackButton onPress={() => navigation.replace('ScanRoom')} label="Scan another room" />
 
-        <View style={styles.gauge}>
-          <RatingGauge score={analysis.overall_score} />
-        </View>
-        <Text style={styles.summary}>{analysis.summary}</Text>
+      <View style={styles.main}>
+        <ViewfinderFrame fill>
+          <Image source={{ uri: previewImage }} style={styles.photo} accessibilityIgnoresInvertColors />
+        </ViewfinderFrame>
+      </View>
 
-        <Text style={styles.section}>Chi flow</Text>
-        <View style={styles.chiRow}>
-          <Text style={styles.chiScore}>{chi.score}</Text>
-          <View style={styles.track}>
-            <View style={[styles.fill, { width: `${chi.score}%` }]} />
+      <View style={styles.bottom}>
+        <Pressable
+          onPress={() => setDetailsOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel="See more"
+          hitSlop={12}
+          style={styles.seeMore}>
+          <CaretUp size={28} weight="bold" color={colors.paper} />
+          <Text style={styles.seeMoreText}>see more</Text>
+        </Pressable>
+        <View style={styles.bar}>
+          <ScoreBar percent={score} />
+        </View>
+        <Text style={styles.score} accessibilityLabel={`Your feng shui score is ${score} out of 100`}>
+          {score}%
+        </Text>
+      </View>
+
+      <Modal
+        visible={detailsOpen}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setDetailsOpen(false)}
+        onDismiss={() => {
+          // navigate only once the sheet has finished closing, or iOS drops the push
+          if (openLayoutAfterClose.current && layout) navigation.navigate('RoomLayout', { layout });
+          openLayoutAfterClose.current = false;
+        }}>
+        <View style={styles.sheet}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheetContent}>
+            <Text style={styles.sheetTitle}>
+              {analysis.room_type.charAt(0).toUpperCase() + analysis.room_type.slice(1)}
+            </Text>
+            <Text style={styles.summary}>{analysis.summary}</Text>
+
+            <Text style={styles.sheetTitle}>The five elements</Text>
+            <ElementBalance elements={analysis.elements} />
+
+            {analysis.recommendations.length > 0 && (
+              <>
+                <Text style={styles.sheetTitle}>What to change</Text>
+                <View style={styles.recs}>
+                  {analysis.recommendations.map(item => (
+                    <IssueListItem key={item.title} item={item} />
+                  ))}
+                </View>
+              </>
+            )}
+          </ScrollView>
+          <View style={styles.sheetFooter}>
+            {layout && (
+              <Button
+                label="compare"
+                onPress={() => {
+                  openLayoutAfterClose.current = true;
+                  setDetailsOpen(false);
+                }}
+              />
+            )}
+            <Button label="close" onPress={() => setDetailsOpen(false)} />
           </View>
         </View>
-        <Text style={styles.body}>{chi.summary}</Text>
-        {chi.issues.map(issue => (
-          <Text key={issue} style={styles.issue}>
-            • {issue}
-          </Text>
-        ))}
-
-        <Text style={styles.section}>The five elements</Text>
-        <ElementBalance
-          elements={analysis.elements}
-          dominant={analysis.dominant_element}
-          weakest={analysis.weakest_element}
-        />
-
-        {analysis.recommendations.length > 0 && (
-          <>
-            <Text style={styles.section}>What to change</Text>
-            <View style={styles.recs}>
-              {analysis.recommendations.map(item => (
-                <IssueListItem key={item.title} item={item} />
-              ))}
-            </View>
-          </>
-        )}
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <Button label="Scan another room" icon="scan" onPress={() => navigation.popToTop()} />
-      </View>
+      </Modal>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: spacing.lg },
-  eyebrow: {
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: colors.hairline,
-    borderRadius: radii.pill,
-    paddingHorizontal: spacing.md - 2,
-    paddingVertical: 6,
-  },
-  eyebrowText: { ...typography.eyebrow, fontSize: 11, color: colors.moss },
-  title: { ...typography.title, fontSize: 32, lineHeight: 38, color: colors.espresso, marginTop: spacing.md },
-  gauge: { alignItems: 'center', marginTop: spacing.lg },
-  summary: { ...typography.body, color: colors.bark, marginTop: spacing.md },
-  section: { ...typography.title, fontSize: 22, color: colors.espresso, marginTop: spacing.xl, marginBottom: spacing.sm },
-  chiRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  chiScore: { ...typography.title, color: colors.espresso, minWidth: 44 },
-  track: { flex: 1, height: 10, borderRadius: 5, backgroundColor: colors.sand, overflow: 'hidden' },
-  fill: { height: 10, borderRadius: 5, backgroundColor: colors.moss },
-  body: { ...typography.body, color: colors.bark, marginTop: spacing.sm },
-  issue: { ...typography.caption, color: colors.bark, marginTop: 4 },
+  main: { flex: 1, paddingTop: 12, paddingBottom: 8 },
+  photo: { flex: 1 },
+  bottom: { alignItems: 'center', paddingTop: 8 },
+  seeMore: { alignItems: 'center' },
+  seeMoreText: { ...typography.caption, color: colors.paper },
+  bar: { marginTop: 14, marginBottom: 10, maxWidth: '100%' },
+  score: { ...typography.display, fontSize: 56, lineHeight: 62, color: colors.paper },
+  sheet: { flex: 1, backgroundColor: colors.sand },
+  sheetContent: { padding: spacing.lg, gap: spacing.md },
+  sheetTitle: { ...typography.title, color: colors.ink, marginTop: spacing.sm },
+  summary: { ...typography.body, color: colors.ink },
   recs: { gap: spacing.md },
-  footer: { paddingTop: spacing.md },
+  sheetFooter: { padding: spacing.lg, gap: spacing.md },
 });

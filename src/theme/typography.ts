@@ -1,13 +1,15 @@
-// Serif display (ships with iOS) paired with the system sans for body text
+// Instrument Sans everywhere (static Regular and Medium cut from the variable font, bundled in assets/fonts)
 import { TextStyle } from 'react-native';
 
-const display = 'Iowan Old Style';
+export const fonts = { regular: 'InstrumentSans-Regular', medium: 'InstrumentSans-Medium' } as const;
+
+// Kept so existing imports keep working; prefer `fonts.regular`
+export const serif = fonts.regular;
 
 export const typography = {
-  eyebrow: { fontSize: 12, letterSpacing: 2.4, fontWeight: '600', textTransform: 'uppercase' },
-  hero: { fontFamily: display, fontSize: 46, lineHeight: 50, letterSpacing: -0.8 },
-  title: { fontFamily: display, fontSize: 28, lineHeight: 34 },
-  body: { fontSize: 17, lineHeight: 25 },
-  label: { fontSize: 15, fontWeight: '600' },
-  caption: { fontSize: 14, lineHeight: 20 },
+  display: { fontFamily: fonts.medium, fontSize: 40, lineHeight: 46, letterSpacing: -0.8, textAlign: 'center' },
+  button: { fontFamily: fonts.medium, fontSize: 28, lineHeight: 34, letterSpacing: -0.3, textAlign: 'center' },
+  title: { fontFamily: fonts.medium, fontSize: 26, lineHeight: 32, letterSpacing: -0.4 },
+  body: { fontFamily: fonts.regular, fontSize: 18, lineHeight: 25 },
+  caption: { fontFamily: fonts.regular, fontSize: 16, lineHeight: 22 },
 } satisfies Record<string, TextStyle>;
