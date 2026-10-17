@@ -1,2 +1,5 @@
-// navigation.types.ts — Route names and param lists for React Navigation
-export {};
+// navigation.types.ts — route names and param lists for React Navigation
+export type RootStackParamList = {
+  Home: undefined;
+  ScanRoom: undefined;
+};

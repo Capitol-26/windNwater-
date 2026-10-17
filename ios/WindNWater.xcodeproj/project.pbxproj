@@ -7,34 +7,39 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A74D58789BF7861F00E18EC /* FloorPlanSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25761C2C51DCC373D19F2C8D /* FloorPlanSerializer.swift */; };
 		0C80B921A6F3F58F76C31292 /* libPods-WindNWater.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-WindNWater.a */; };
+		0E6809A6EB0B60FD119A8175 /* FloorPlanGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E4E6C190A7381996B912513 /* FloorPlanGeometry.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		2155E1DAE3B7C681DBFE7E25 /* CapturedRoomSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E02C8589DCF076085494D4 /* CapturedRoomSerializer.swift */; };
 		31E9300B9E3F2264896A4546 /* RoomScanModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 29CE4FA41B3107C5B44998C6 /* RoomScanModule.m */; };
 		4EA9FFBD9C93BEB2ECCF53BF /* RoomScanModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 238A9ECAC14E610455F67193 /* RoomScanModule.swift */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EE2CA45674006654EF /* SceneDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		B846075835C34ACC1B7708EA /* RoomCaptureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7CA3EA39F8EE23DCE0670F /* RoomCaptureViewController.swift */; };
+		8B5BEF7DBD23E3611485EA69 /* GuidedScanViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B5592E94AE58D78DA57372 /* GuidedScanViewController.swift */; };
+		A65D1639B68A4E3280EBFC9A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		E1878A59B224CAD756C0E0F6 /* ScanDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25BE05603E7E43A3C10F77FD /* ScanDraft.swift */; };
 		FC66ACAB03B3C901F137A6BF /* ARSupportChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B9CC79BA126926DFD86163 /* ARSupportChecker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0E4E6C190A7381996B912513 /* FloorPlanGeometry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FloorPlanGeometry.swift; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* WindNWater.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WindNWater.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = WindNWater/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = WindNWater/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = WindNWater/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		238A9ECAC14E610455F67193 /* RoomScanModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomScanModule.swift; sourceTree = "<group>"; };
+		25761C2C51DCC373D19F2C8D /* FloorPlanSerializer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FloorPlanSerializer.swift; sourceTree = "<group>"; };
+		25BE05603E7E43A3C10F77FD /* ScanDraft.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanDraft.swift; sourceTree = "<group>"; };
 		29CE4FA41B3107C5B44998C6 /* RoomScanModule.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RoomScanModule.m; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-WindNWater.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WindNWater.debug.xcconfig"; path = "Target Support Files/Pods-WindNWater/Pods-WindNWater.debug.xcconfig"; sourceTree = "<group>"; };
-		47E02C8589DCF076085494D4 /* CapturedRoomSerializer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CapturedRoomSerializer.swift; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-WindNWater.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WindNWater.release.xcconfig"; path = "Target Support Files/Pods-WindNWater/Pods-WindNWater.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-WindNWater.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WindNWater.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		63B9CC79BA126926DFD86163 /* ARSupportChecker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ARSupportChecker.swift; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = WindNWater/AppDelegate.swift; sourceTree = "<group>"; };
 		761780EE2CA45674006654EF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = WindNWater/SceneDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = WindNWater/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		DE7CA3EA39F8EE23DCE0670F /* RoomCaptureViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomCaptureViewController.swift; sourceTree = "<group>"; };
+		B8B5592E94AE58D78DA57372 /* GuidedScanViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidedScanViewController.swift; sourceTree = "<group>"; };
 		DFD8D5686445506199A21ED2 /* WindNWater-Bridging-Header.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "WindNWater/WindNWater-Bridging-Header.h"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -79,10 +84,12 @@
 			isa = PBXGroup;
 			children = (
 				63B9CC79BA126926DFD86163 /* ARSupportChecker.swift */,
-				47E02C8589DCF076085494D4 /* CapturedRoomSerializer.swift */,
-				DE7CA3EA39F8EE23DCE0670F /* RoomCaptureViewController.swift */,
 				29CE4FA41B3107C5B44998C6 /* RoomScanModule.m */,
 				238A9ECAC14E610455F67193 /* RoomScanModule.swift */,
+				0E4E6C190A7381996B912513 /* FloorPlanGeometry.swift */,
+				25BE05603E7E43A3C10F77FD /* ScanDraft.swift */,
+				25761C2C51DCC373D19F2C8D /* FloorPlanSerializer.swift */,
+				B8B5592E94AE58D78DA57372 /* GuidedScanViewController.swift */,
 			);
 			name = AR;
 			path = WindNWater/AR;
@@ -188,6 +195,7 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				A65D1639B68A4E3280EBFC9A /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -218,9 +226,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-WindNWater/Pods-WindNWater-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-WindNWater/Pods-WindNWater-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -257,9 +269,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-WindNWater/Pods-WindNWater-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-WindNWater/Pods-WindNWater-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -276,10 +292,12 @@
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */,
 				FC66ACAB03B3C901F137A6BF /* ARSupportChecker.swift in Sources */,
-				2155E1DAE3B7C681DBFE7E25 /* CapturedRoomSerializer.swift in Sources */,
-				B846075835C34ACC1B7708EA /* RoomCaptureViewController.swift in Sources */,
 				31E9300B9E3F2264896A4546 /* RoomScanModule.m in Sources */,
 				4EA9FFBD9C93BEB2ECCF53BF /* RoomScanModule.swift in Sources */,
+				0E6809A6EB0B60FD119A8175 /* FloorPlanGeometry.swift in Sources */,
+				E1878A59B224CAD756C0E0F6 /* ScanDraft.swift in Sources */,
+				0A74D58789BF7861F00E18EC /* FloorPlanSerializer.swift in Sources */,
+				8B5BEF7DBD23E3611485EA69 /* GuidedScanViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,7 +310,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UM62FM984Q;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = WindNWater/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -306,8 +327,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.aryan.patil.windnwater;
 				PRODUCT_NAME = WindNWater;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OBJC_BRIDGING_HEADER = "WindNWater/WindNWater-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -323,7 +345,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UM62FM984Q;
 				INFOPLIST_FILE = WindNWater/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -336,8 +361,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.aryan.patil.windnwater;
 				PRODUCT_NAME = WindNWater;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OBJC_BRIDGING_HEADER = "WindNWater/WindNWater-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -407,6 +433,10 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
+				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DFOLLY_NO_CONFIG",
@@ -414,8 +444,13 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
+				PODFILE_DIR = "$(SRCROOT)";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				USE_HERMES = true;
 			};
 			name = Debug;
 		};
@@ -472,6 +507,10 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
+				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DFOLLY_NO_CONFIG",
@@ -479,8 +518,12 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
+				PODFILE_DIR = "$(SRCROOT)";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

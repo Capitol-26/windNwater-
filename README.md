@@ -16,3 +16,13 @@ cp .env.example .env   # add DEEPSEEK_API_KEY
 bundle install && npm run pods
 npm run ios
 ```
+
+## Scan server (OpenCV frame extraction)
+The app records a video and uploads it to `server/`, which uses OpenCV to pull out sharp, distinct frames and hands them to `analyze_frames()` in `server/app/ai_client.py` (the AI call is left there for you to fill in).
+```sh
+cd server
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+In `.env`, set `SCAN_API_URL=http://<your-mac-lan-ip>:8000` when testing on a phone.

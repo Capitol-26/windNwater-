@@ -78,3 +78,7 @@ yarn-error.log
 .env
 .env.*
 !.env.example
+
+# Python server
+server/.venv/
+__pycache__/

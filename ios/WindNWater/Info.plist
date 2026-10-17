@@ -28,7 +28,6 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-	  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
@@ -36,10 +35,10 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>WindNWater uses the camera and LiDAR scanner to measure your room and detect furniture.</string>
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>arkit</string>
-	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>WindNWater reads the compass so your floor plan shows which way each wall faces.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>WindNWater records audio with your room scan video.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
