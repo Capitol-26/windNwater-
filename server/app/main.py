@@ -10,7 +10,7 @@ from fastapi.concurrency import run_in_threadpool
 
 from . import config
 from .ai_client import AIError, analyze_frames
-from .frame_extractor import VideoReadError, extract_frames
+from .frame_extractor import VideoReadError, extract_frame_at, extract_frames
 
 log = logging.getLogger("uvicorn.error")
 app = FastAPI(title="WindNWater scan API")

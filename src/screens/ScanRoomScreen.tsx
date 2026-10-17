@@ -31,6 +31,7 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
   const [seconds, setSeconds] = useState(0);
   const [recordError, setRecordError] = useState<string | null>(null);
   const limitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stopping = useRef(false);
   const morph = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -59,6 +60,8 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
 
   // Stopping (by the shutter or by the time limit) hands the video to onRecordingFinished, which uploads it
   const stopRecording = useCallback(async () => {
+    if (stopping.current) return;
+    stopping.current = true;
     if (limitTimer.current) clearTimeout(limitTimer.current);
     limitTimer.current = null;
     setRecording(false);
@@ -73,8 +76,14 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
     if (limitTimer.current) clearTimeout(limitTimer.current);
   }, []);
 
+  // backup for the limit timer: the clock reaching the limit also ends and sends the scan
+  useEffect(() => {
+    if (recording && seconds >= MAX_SCAN_SECONDS) stopRecording();
+  }, [recording, seconds, stopRecording]);
+
   const toggleRecording = async () => {
     if (!recording) {
+      stopping.current = false;
       setRecording(true);
       // the limit is its own timer, so it ends and sends the scan whatever the on-screen clock is doing
       limitTimer.current = setTimeout(stopRecording, MAX_SCAN_SECONDS * 1000);
@@ -84,6 +93,7 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
         onRecordingFinished: video => uploadVideo(video.path),
         onRecordingError: error => {
           if (limitTimer.current) clearTimeout(limitTimer.current);
+          stopping.current = true;
           setRecording(false);
           setRecordError(error.message);
         },
