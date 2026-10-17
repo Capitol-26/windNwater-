@@ -27,13 +27,13 @@ const LAYOUTS = {
     top: { shape: blobs.cameraTop, position: { top: -100, left: -70 } },
     bottom: { shape: blobs.cameraBottom, position: { bottom: -188, left: -111 } },
   },
-  result: {
-    top: { shape: blobs.resultTop, position: { top: -97, right: -73 } },
-    bottom: { shape: blobs.resultBottom, position: { bottom: -200, left: -64 } },
-  },
   layout: {
     top: { shape: blobs.scanTop, position: { top: -42, right: -57 } },
     bottom: { shape: blobs.scanBottom, position: { bottom: -75, left: -56 } },
+  },
+  result: {
+    top: { shape: blobs.resultTop, position: { top: -97, right: -73 } },
+    bottom: { shape: blobs.resultBottom, position: { bottom: -200, left: -64 } },
   },
 } satisfies Record<string, Record<'top' | 'bottom', { shape: blobs.BlobShape; position: ViewStyle }>>;
 

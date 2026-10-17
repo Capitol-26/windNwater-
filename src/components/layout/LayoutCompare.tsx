@@ -43,10 +43,10 @@ export default function LayoutCompare({ layout }: { layout: RoomLayout }) {
     <View style={styles.root} onLayout={onLayout}>
       {size.width > 0 && (
         <>
-          <RoomPlan layout={layout} items={layout.optimal_items} tint={colors.sage} width={size.width} height={size.height} />
+          <RoomPlan layout={layout} items={layout.optimal_items} mode="optimal" tint={colors.sage} width={size.width} height={size.height} />
           <Animated.View style={[styles.clip, currentStyle]} pointerEvents="none">
             <View style={{ width: size.width, height: size.height }}>
-              <RoomPlan layout={layout} items={layout.items} tint={colors.clay} width={size.width} height={size.height} />
+              <RoomPlan layout={layout} items={layout.items} mode="now" tint={colors.clay} width={size.width} height={size.height} />
             </View>
           </Animated.View>
           <Animated.View style={[styles.line, lineStyle]} pointerEvents="none" />

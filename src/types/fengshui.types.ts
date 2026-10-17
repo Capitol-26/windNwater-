@@ -28,16 +28,23 @@ export type LayoutItem = {
   y: number; // centre
   width: number;
   depth: number;
+  floor_uv?: [number, number]; // where its base meets the floor in the floor reference frame, 0-1 from the top-left
 };
 
-export type OptimalItem = LayoutItem & { reason: string };
+export type OptimalItem = LayoutItem & {
+  reason: string;
+  added?: boolean; // a new piece the recommendations suggest, not one already in the room
+};
+
+export type Zone = { x: number; y: number; width: number; depth: number }; // centre and size
 
 export type RoomLayout = {
   width: number;
   length: number;
   openings: Opening[];
   items: LayoutItem[];
-  optimal_items: OptimalItem[]; // the same pieces as `items`, in the same order
+  optimal_items: OptimalItem[]; // every piece in `items` (same order), then any added pieces
+  clutter?: Zone[]; // floor areas to clear
 };
 
 export type FengShuiAnalysis = {

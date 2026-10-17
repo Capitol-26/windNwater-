@@ -5,7 +5,7 @@ import tempfile
 import time
 import uuid
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
 from . import config
@@ -22,7 +22,7 @@ def health() -> dict:
 
 
 @app.post("/scans")
-async def create_scan(video: UploadFile = File(...)) -> dict:
+async def create_scan(video: UploadFile = File(...), floor_time: float | None = Form(None)) -> dict:
     started = time.perf_counter()
     suffix = os.path.splitext(video.filename or "")[1] or ".mov"
     max_bytes = config.MAX_UPLOAD_MB * 1024 * 1024
@@ -45,6 +45,7 @@ async def create_scan(video: UploadFile = File(...)) -> dict:
     try:
         # OpenCV decoding is blocking; run it off the event loop so other requests aren't stalled
         extraction = await run_in_threadpool(extract_frames, path)
+        floor_reference = await run_in_threadpool(extract_frame_at, path, floor_time) if floor_time is not None else None
     except VideoReadError as error:
         raise HTTPException(422, str(error))
     finally:
@@ -55,7 +56,7 @@ async def create_scan(video: UploadFile = File(...)) -> dict:
 
     extracted = time.perf_counter()
     try:
-        analysis = await analyze_frames(extraction.frames)
+        analysis = await analyze_frames(extraction.frames, floor_reference)
     except AIError as error:
         raise HTTPException(error.status_code, str(error))
 

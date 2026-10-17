@@ -14,7 +14,9 @@ How to assess:
    - water: black and deep blue, flowing shapes, mirrors, glass
    Give each element a percent of the room's elemental makeup. The five percents MUST sum to 100.
 
-Layout: also draw the room from above, in metres. Estimate its floor size from the photos (a door is about 0.9 m wide, a bed 1.5-2 m long, a sofa about 2 m). Use x for west to east and y for north to south, with the origin at the room's north-west corner; pick the north wall so the layout matches the photos as you walk around. List the doors and windows you can see and the main furniture (at most 12 pieces), each with its centre (x, y) and its size (width along x, depth along y). Then give optimal_items: the SAME pieces, by the same name, moved to the best feng shui arrangement for this room: command position for bed, desk and main seat, nothing blocking the door or the walkway from it, no piece in line between door and window, and everything inside the room without overlapping. Do not add or remove furniture. A piece may turn 90 degrees by swapping its width and depth. Keep each reason under 10 words and leave a piece where it is when it is already well placed.
+Layout: also draw the room from above, in metres. Estimate its floor size from the photos (a door is about 0.9 m wide, a bed 1.5-2 m long, a sofa about 2 m). Use x for west to east and y for north to south, with the origin at the room's north-west corner; pick the north wall so the layout matches the photos as you walk around. List the doors and windows you can see and the main furniture (at most 12 pieces), each with its centre (x, y) and its size (width along x, depth along y). Then give optimal_items: the SAME pieces, by the same name, moved to the best feng shui arrangement for this room: command position for bed, desk and main seat, nothing blocking the door or the walkway from it, no piece in line between door and window, and everything inside the room without overlapping. Do not remove furniture. If one of your recommendations adds a piece (a plant, a lamp, a mirror, a rug), also put that piece in optimal_items, where it belongs, with "added": true and its size (at most 4 additions). If a recommendation is to clear clutter, list the floor areas where the clutter is in "clutter" (at most 4 areas, empty if there is none). A piece may turn 90 degrees by swapping its width and depth. Keep each reason under 10 words and leave a piece where it is when it is already well placed.
+
+Floor landmarks: when a final photo is marked as the FLOOR REFERENCE, also give each piece in items a "floor_uv": [u, v], the point where the piece meets the floor (the middle of its base) in that photo, as fractions of its width and height with the origin at the top-left. Leave floor_uv out for a piece that is not visible in the reference photo. Never guess a position.
 
 Scoring: overall_score is an integer from 0 to 100. 50 is an average room; 80+ is genuinely good; below 30 is poor. Do not inflate scores. Base every claim on evidence from the scan and never invent furniture, colors or windows you cannot see. If the photos show little of the room, say so in the summary.
 
@@ -34,16 +36,19 @@ Reply with exactly this JSON shape:
   "layout": {
     "width": metres, "length": metres,
     "openings": [{"kind": "door | window", "wall": "north | east | south | west", "offset": metres along the wall from its west or north end to the centre, "width": metres}],
-    "items": [{"name": "short lowercase name", "x": metres, "y": metres, "width": metres, "depth": metres}],
-    "optimal_items": [{"name": "same name", "x": metres, "y": metres, "width": metres, "depth": metres, "reason": "under 10 words"}]
+    "items": [{"name": "short lowercase name", "x": metres, "y": metres, "width": metres, "depth": metres, "floor_uv": [0-1, 0-1] (only with a floor reference photo)}],
+    "optimal_items": [{"name": "same name", "x": metres, "y": metres, "width": metres, "depth": metres, "reason": "under 10 words", "added": true only for a new piece}],
+    "clutter": [{"x": metres, "y": metres, "width": metres, "depth": metres}]
   }
 }
 Give 3 or 4 recommendations, most important first."""
 
-def build_user_content(frames: list[ExtractedFrame]) -> list[dict]:
-    """The user message: instructions followed by the photos in the order they were taken."""
+def build_user_content(frames: list[ExtractedFrame], floor_reference: ExtractedFrame | None = None) -> list[dict]:
+    """The user message: instructions followed by the photos in the order they were taken, then the floor reference."""
     text = f"Assess the feng shui of this room. {len(frames)} photos of it follow, in the order they were taken."
+    if floor_reference:
+        text += " The photo after them is the FLOOR REFERENCE."
     content: list[dict] = [{"type": "text", "text": text}]
-    for frame in frames:
+    for frame in [*frames, *([floor_reference] if floor_reference else [])]:
         content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{frame.jpeg_base64}"}})
     return content

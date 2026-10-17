@@ -61,7 +61,7 @@ async def _post(client: httpx.AsyncClient, content: list[dict]) -> httpx.Respons
     )
 
 
-async def analyze_frames(frames: list[ExtractedFrame]) -> dict:
+async def analyze_frames(frames: list[ExtractedFrame], floor_reference: ExtractedFrame | None = None) -> dict:
     """Send the room photos to the AI and return a validated feng shui analysis."""
     if not config.AI_API_KEY:
         raise AIError("No AI key is set. Add AI_API_KEY (your OpenRouter key) to your .env file.", 503)
@@ -71,7 +71,7 @@ async def analyze_frames(frames: list[ExtractedFrame]) -> dict:
     frames = _evenly_spaced(frames, config.AI_MAX_IMAGES)
     try:
         async with httpx.AsyncClient(timeout=config.AI_TIMEOUT_SEC) as client:
-            response = await _post(client, build_user_content(frames))
+            response = await _post(client, build_user_content(frames, floor_reference))
     except httpx.TimeoutException as error:
         raise AIError("The AI took too long to respond.", 504) from error
     except httpx.HTTPError as error:

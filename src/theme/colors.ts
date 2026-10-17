@@ -8,6 +8,7 @@ export const colors = {
   inkSoft: 'rgba(0,0,0,0.62)',
   track: 'rgba(0,0,0,0.12)',
   dot: 'rgba(255,255,255,0.5)',
+  drafting: '#F5E6C8', // the pale sheet behind the room plan
 } as const;
 
 // One earthen hue per feng shui element

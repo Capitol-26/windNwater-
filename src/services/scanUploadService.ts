@@ -5,6 +5,7 @@ import { ScanAnalysisResponse } from '../types/scan.types';
 export function uploadScanVideo(
   videoPath: string,
   onProgress?: (fraction: number) => void,
+  floorTime?: number,
 ): Promise<ScanAnalysisResponse> {
   return new Promise((resolve, reject) => {
     const form = new FormData();
@@ -13,6 +14,8 @@ export function uploadScanVideo(
       name: 'scan.mov',
       type: 'video/quicktime',
     } as unknown as Blob);
+
+    if (floorTime !== undefined) form.append('floor_time', String(floorTime));
 
     const request = new XMLHttpRequest();
     request.open('POST', `${SCAN_API_URL}/scans`);

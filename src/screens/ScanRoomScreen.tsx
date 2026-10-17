@@ -29,6 +29,8 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
 
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
+  const [recordError, setRecordError] = useState<string | null>(null);
+  const limitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const morph = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -55,23 +57,36 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
     return () => clearInterval(tick);
   }, [recording, morph]);
 
+  // Stopping (by the shutter or by the time limit) hands the video to onRecordingFinished, which uploads it
   const stopRecording = useCallback(async () => {
+    if (limitTimer.current) clearTimeout(limitTimer.current);
+    limitTimer.current = null;
     setRecording(false);
-    await camera.current?.stopRecording();
+    try {
+      await camera.current?.stopRecording();
+    } catch (error) {
+      setRecordError(error instanceof Error ? error.message : 'The recording could not be saved.');
+    }
   }, []);
 
-  useEffect(() => {
-    if (recording && seconds >= MAX_SCAN_SECONDS) stopRecording();
-  }, [recording, seconds, stopRecording]);
+  useEffect(() => () => {
+    if (limitTimer.current) clearTimeout(limitTimer.current);
+  }, []);
 
   const toggleRecording = async () => {
     if (!recording) {
       setRecording(true);
+      // the limit is its own timer, so it ends and sends the scan whatever the on-screen clock is doing
+      limitTimer.current = setTimeout(stopRecording, MAX_SCAN_SECONDS * 1000);
       camera.current?.startRecording({
         fileType: 'mov',
         videoCodec: 'h264',
         onRecordingFinished: video => uploadVideo(video.path),
-        onRecordingError: () => setRecording(false),
+        onRecordingError: error => {
+          if (limitTimer.current) clearTimeout(limitTimer.current);
+          setRecording(false);
+          setRecordError(error.message);
+        },
       });
     } else if (seconds >= MIN_SCAN_SECONDS) {
       await stopRecording();
@@ -141,7 +156,7 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
         </Pressable>
         <Text style={styles.label}>
           {recording
-            ? `${seconds < MIN_SCAN_SECONDS ? 'keep panning' : 'click to finish'} · ${formatTime(seconds)} / ${formatTime(MAX_SCAN_SECONDS)}`
+            ? `${seconds < MIN_SCAN_SECONDS ? 'keep panning' : 'click to finish'} · ${formatTime(Math.min(seconds, MAX_SCAN_SECONDS))} / ${formatTime(MAX_SCAN_SECONDS)}`
             : 'click to start'}
         </Text>
       </View>
@@ -153,10 +168,10 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
         />
       )}
 
-      {upload.status === 'error' && (
+      {(upload.status === 'error' || recordError) && (
         <View style={styles.overlay}>
-          <Text style={styles.overlayTitle}>{upload.message}</Text>
-          <Button label="try again" onPress={resetUpload} />
+          <Text style={styles.overlayTitle}>{recordError ?? (upload.status === 'error' ? upload.message : '')}</Text>
+          <Button label="try again" onPress={() => { setRecordError(null); resetUpload(); }} />
         </View>
       )}
     </ScreenContainer>

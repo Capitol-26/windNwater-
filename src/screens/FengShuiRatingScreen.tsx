@@ -1,5 +1,5 @@
 // FengShuiRatingScreen.tsx — the score over the room's last frame, with the full analysis behind "see more"
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CaretUp } from 'phosphor-react-native';
@@ -21,7 +21,6 @@ export default function FengShuiRatingScreen({
 }: NativeStackScreenProps<RootStackParamList, 'FengShuiRating'>) {
   const { analysis, previewImage } = route.params;
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const openLayoutAfterClose = useRef(false);
   const { layout } = analysis;
   const score = Math.round(Math.min(100, Math.max(0, analysis.overall_score)));
 
@@ -33,6 +32,11 @@ export default function FengShuiRatingScreen({
         <ViewfinderFrame fill>
           <Image source={{ uri: previewImage }} style={styles.photo} accessibilityIgnoresInvertColors />
         </ViewfinderFrame>
+        {layout && (
+          <View style={styles.compare}>
+            <Button label="compare" onPress={() => navigation.navigate('RoomLayout', { layout })} />
+          </View>
+        )}
       </View>
 
       <View style={styles.bottom}>
@@ -57,12 +61,7 @@ export default function FengShuiRatingScreen({
         visible={detailsOpen}
         animationType="slide"
         presentationStyle="pageSheet"
-        onRequestClose={() => setDetailsOpen(false)}
-        onDismiss={() => {
-          // navigate only once the sheet has finished closing, or iOS drops the push
-          if (openLayoutAfterClose.current && layout) navigation.navigate('RoomLayout', { layout });
-          openLayoutAfterClose.current = false;
-        }}>
+        onRequestClose={() => setDetailsOpen(false)}>
         <View style={styles.sheet}>
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheetContent}>
             <Text style={styles.sheetTitle}>
@@ -85,15 +84,6 @@ export default function FengShuiRatingScreen({
             )}
           </ScrollView>
           <View style={styles.sheetFooter}>
-            {layout && (
-              <Button
-                label="compare"
-                onPress={() => {
-                  openLayoutAfterClose.current = true;
-                  setDetailsOpen(false);
-                }}
-              />
-            )}
             <Button label="close" onPress={() => setDetailsOpen(false)} />
           </View>
         </View>
@@ -105,6 +95,7 @@ export default function FengShuiRatingScreen({
 const styles = StyleSheet.create({
   main: { flex: 1, paddingTop: 12, paddingBottom: 8 },
   photo: { flex: 1 },
+  compare: { paddingTop: 12 },
   bottom: { alignItems: 'center', paddingTop: 8 },
   seeMore: { alignItems: 'center' },
   seeMoreText: { ...typography.caption, color: colors.paper },
@@ -115,5 +106,5 @@ const styles = StyleSheet.create({
   sheetTitle: { ...typography.title, color: colors.ink, marginTop: spacing.sm },
   summary: { ...typography.body, color: colors.ink },
   recs: { gap: spacing.md },
-  sheetFooter: { padding: spacing.lg, gap: spacing.md },
+  sheetFooter: { padding: spacing.lg },
 });
