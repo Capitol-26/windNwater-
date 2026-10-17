@@ -56,6 +56,7 @@ async def _post(client: httpx.AsyncClient, content: list[dict]) -> httpx.Respons
             "temperature": 0.3,
             "max_tokens": config.AI_MAX_TOKENS,
             "response_format": {"type": "json_object"},
+            "reasoning": {"enabled": config.AI_REASONING},
         },
     )
 
@@ -97,7 +98,7 @@ async def analyze_frames(frames: list[ExtractedFrame], floor_plan: dict | None =
     except (KeyError, IndexError, ValueError, AttributeError) as error:
         raise AIError("The AI service returned an unexpected response.") from error
     if not reply:
-        # Reasoning models can spend the whole token budget thinking and return no answer.
+        # The model can spend the whole token budget and return no answer.
         hint = " Try raising AI_MAX_TOKENS." if choice.get("finish_reason") == "length" else ""
         raise AIError("The AI returned an empty answer." + hint)
 
