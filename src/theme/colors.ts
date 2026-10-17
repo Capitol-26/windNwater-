@@ -14,3 +14,12 @@ export const colors = {
   hairline: 'rgba(74,56,40,0.16)',
   hairlineLight: 'rgba(244,237,224,0.28)',
 } as const;
+
+// One earthen hue per feng shui element
+export const elementColors = {
+  wood: '#5F6B45',
+  fire: '#B8603E',
+  earth: '#C9A46A',
+  metal: '#8E8F8A',
+  water: '#3E6A73',
+} as const;

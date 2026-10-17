@@ -1,6 +1,7 @@
 // RootNavigator.tsx — root native-stack navigator for the app
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
+import FengShuiRatingScreen from '../screens/FengShuiRatingScreen';
 import ScanRoomScreen from '../screens/ScanRoomScreen';
 import { RootStackParamList } from './navigation.types';
 
@@ -15,6 +16,7 @@ export default function RootNavigator() {
         component={ScanRoomScreen}
         options={{ animation: 'slide_from_bottom', gestureEnabled: false }}
       />
+      <Stack.Screen name="FengShuiRating" component={FengShuiRatingScreen} />
     </Stack.Navigator>
   );
 }

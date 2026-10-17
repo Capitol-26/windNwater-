@@ -33,6 +33,10 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
   const morph = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    if (upload.status === 'done') navigation.replace('FengShuiRating', { analysis: upload.result.analysis });
+  }, [upload, navigation]);
+
+  useEffect(() => {
     if (!hasPermission) requestPermission();
   }, [hasPermission, requestPermission]);
 
@@ -148,19 +152,16 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
       {upload.status !== 'idle' && (
         <View style={styles.overlay}>
           <Text style={styles.eyebrow}>
-            {upload.status === 'done' ? 'Scan received' : upload.status === 'error' ? 'Something went wrong' : 'Working'}
+            {upload.status === 'error' ? 'Something went wrong' : 'Working'}
           </Text>
           <Text style={styles.overlayTitle}>
             {upload.status === 'uploading' && `Sending your scan ${Math.round(upload.progress * 100)}%`}
-            {upload.status === 'analyzing' && 'Reading the room…'}
-            {upload.status === 'done' && `${upload.result.frame_count} frames captured`}
+            {(upload.status === 'analyzing' || upload.status === 'done') && 'Reading the room…'}
             {upload.status === 'error' && upload.message}
           </Text>
-          {(upload.status === 'done' || upload.status === 'error') && (
-            <Pressable
-              onPress={() => (upload.status === 'done' ? navigation.goBack() : resetUpload())}
-              style={styles.overlayButton}>
-              <Text style={styles.overlayButtonText}>{upload.status === 'done' ? 'Done' : 'Try again'}</Text>
+          {upload.status === 'error' && (
+            <Pressable onPress={resetUpload} style={styles.overlayButton}>
+              <Text style={styles.overlayButtonText}>Try again</Text>
             </Pressable>
           )}
         </View>

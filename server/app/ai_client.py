@@ -1,37 +1,111 @@
-# ai_client.py — the single place where extracted frames are sent to an AI model
+# ai_client.py — the single place where extracted frames and floor plans are sent to the AI model
+import json
+import re
+
+import httpx
+from pydantic import ValidationError
+
+from . import config
 from .frame_extractor import ExtractedFrame
+from .prompts import SYSTEM_PROMPT, build_user_content
+from .schemas import FengShuiAnalysis, normalize
 
 
-async def analyze_frames(frames: list[ExtractedFrame]) -> dict:
-    """Send the extracted room frames to the AI and return its analysis as a dict."""
-    # ------------------------------------------------------------------
-    # AI CALL GOES HERE.
-    #
-    # Each frame has:
-    #   frame.jpeg_base64   JPEG image, base64-encoded, at most 768px wide
-    #   frame.timestamp_sec when in the video the frame was taken
-    #
-    # Example shape (use your own provider, model and API key):
-    #
-    #   async with httpx.AsyncClient(timeout=120) as client:
-    #       response = await client.post(
-    #           AI_API_URL,
-    #           headers={"Authorization": f"Bearer {AI_API_KEY}"},
-    #           json={
-    #               "model": AI_MODEL,
-    #               "messages": [{
-    #                   "role": "user",
-    #                   "content": [
-    #                       {"type": "text", "text": PROMPT},
-    #                       *[
-    #                           {"type": "image_url",
-    #                            "image_url": {"url": f"data:image/jpeg;base64,{f.jpeg_base64}"}}
-    #                           for f in frames
-    #                       ],
-    #                   ],
-    #               }],
-    #           },
-    #       )
-    #       return response.json()
-    # ------------------------------------------------------------------
-    return {"status": "not_implemented", "frames_received": len(frames)}
+class AIError(Exception):
+    """Raised when the AI call fails. `status_code` is the HTTP status the API should return."""
+
+    def __init__(self, message: str, status_code: int = 502):
+        super().__init__(message)
+        self.status_code = status_code
+
+
+def _endpoint() -> str:
+    base = config.AI_BASE_URL.rstrip("/")
+    return base if base.endswith("/chat/completions") else f"{base}/chat/completions"
+
+
+def _evenly_spaced(frames: list[ExtractedFrame], limit: int) -> list[ExtractedFrame]:
+    if len(frames) <= limit:
+        return frames
+    step = (len(frames) - 1) / (limit - 1) if limit > 1 else 0
+    return [frames[round(i * step)] for i in range(limit)]
+
+
+def _extract_json(text: str) -> dict:
+    """Pull the JSON object out of the model's reply, tolerating code fences and stray text."""
+    text = re.sub(r"```(?:json)?", "", text)
+    start, end = text.find("{"), text.rfind("}")
+    if start == -1 or end <= start:
+        raise AIError("The AI reply did not contain JSON.")
+    try:
+        return json.loads(text[start : end + 1])
+    except json.JSONDecodeError as error:
+        raise AIError(f"The AI reply was not valid JSON: {error}") from error
+
+
+async def _post(client: httpx.AsyncClient, content: list[dict]) -> httpx.Response:
+    return await client.post(
+        _endpoint(),
+        headers={"Authorization": f"Bearer {config.AI_API_KEY}", "Content-Type": "application/json"},
+        json={
+            "model": config.AI_MODEL,
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": content},
+            ],
+            "temperature": 0.3,
+            "max_tokens": config.AI_MAX_TOKENS,
+            "response_format": {"type": "json_object"},
+        },
+    )
+
+
+async def analyze_frames(frames: list[ExtractedFrame], floor_plan: dict | None = None) -> dict:
+    """Send the room photos and/or floor plan to the AI and return a validated feng shui analysis."""
+    if not config.AI_API_KEY:
+        raise AIError("No AI key is set. Add AI_API_KEY (your OpenRouter key) to your .env file.", 503)
+    if not frames and not floor_plan:
+        raise AIError("Nothing to analyze.", 422)
+
+    frames = _evenly_spaced(frames, config.AI_MAX_IMAGES)
+    try:
+        async with httpx.AsyncClient(timeout=config.AI_TIMEOUT_SEC) as client:
+            response = await _post(client, build_user_content(frames, floor_plan))
+            # Text-only models reject image input. Retry with just the floor plan if we have one.
+            if response.status_code == 400 and frames and floor_plan:
+                response = await _post(client, build_user_content(frames, floor_plan, include_images=False))
+    except httpx.TimeoutException as error:
+        raise AIError("The AI took too long to respond.", 504) from error
+    except httpx.HTTPError as error:
+        raise AIError(f"Could not reach the AI service: {error}") from error
+
+    if response.status_code == 400 and frames and not floor_plan:
+        raise AIError(
+            "The AI model rejected the photos. Use a vision-capable model (AI_MODEL), "
+            "or scan with the floor plan option instead."
+        )
+    if response.status_code in (401, 403):
+        raise AIError("The AI service rejected the API key.", 502)
+    if response.status_code == 429:
+        raise AIError("The AI service is rate limiting requests. Try again in a moment.", 429)
+    if response.status_code >= 400:
+        raise AIError(f"The AI service returned {response.status_code}: {response.text[:200]}")
+
+    try:
+        choice = response.json()["choices"][0]
+        reply = choice["message"].get("content")
+    except (KeyError, IndexError, ValueError, AttributeError) as error:
+        raise AIError("The AI service returned an unexpected response.") from error
+    if not reply:
+        # Reasoning models can spend the whole token budget thinking and return no answer.
+        hint = " Try raising AI_MAX_TOKENS." if choice.get("finish_reason") == "length" else ""
+        raise AIError("The AI returned an empty answer." + hint)
+
+    try:
+        return normalize(FengShuiAnalysis.model_validate(_extract_json(reply)))
+    except ValidationError as error:
+        raise AIError(f"The AI reply was missing required fields: {error.errors()[0]['loc']}") from error
+
+
+async def analyze_floor_plan(floor_plan: dict) -> dict:
+    return await analyze_frames([], floor_plan)

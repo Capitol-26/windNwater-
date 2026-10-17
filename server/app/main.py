@@ -3,10 +3,10 @@ import os
 import tempfile
 import uuid
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import Body, FastAPI, File, HTTPException, UploadFile
 
 from . import config
-from .ai_client import analyze_frames
+from .ai_client import AIError, analyze_floor_plan, analyze_frames
 from .frame_extractor import VideoReadError, extract_frames
 
 app = FastAPI(title="WindNWater scan API")
@@ -46,7 +46,10 @@ async def create_scan(video: UploadFile = File(...)) -> dict:
     if not extraction.frames:
         raise HTTPException(422, "No usable frames found. Move more slowly and keep the room well lit.")
 
-    analysis = await analyze_frames(extraction.frames)
+    try:
+        analysis = await analyze_frames(extraction.frames)
+    except AIError as error:
+        raise HTTPException(error.status_code, str(error))
 
     return {
         "scan_id": uuid.uuid4().hex,
@@ -58,3 +61,14 @@ async def create_scan(video: UploadFile = File(...)) -> dict:
         ],
         "analysis": analysis,
     }
+
+
+@app.post("/floor-plans")
+async def analyze_plan(floor_plan: dict = Body(...)) -> dict:
+    if not isinstance(floor_plan.get("floor"), dict) or not isinstance(floor_plan.get("walls"), list):
+        raise HTTPException(422, "Expected a floor plan with 'floor' and 'walls'.")
+    try:
+        analysis = await analyze_floor_plan(floor_plan)
+    except AIError as error:
+        raise HTTPException(error.status_code, str(error))
+    return {"analysis": analysis}

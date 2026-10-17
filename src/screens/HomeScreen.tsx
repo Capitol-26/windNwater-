@@ -5,6 +5,7 @@ import Button from '../components/common/Button';
 import Icon, { IconName } from '../components/common/Icon';
 import LandscapeArt from '../components/common/LandscapeArt';
 import ScreenContainer from '../components/common/ScreenContainer';
+import { useFengShuiAnalysis } from '../hooks/useFengShuiAnalysis';
 import { useRoomScan } from '../hooks/useRoomScan';
 import { RootStackParamList } from '../navigation/navigation.types';
 import { colors } from '../theme/colors';
@@ -21,16 +22,16 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
   const { width } = useWindowDimensions();
   const artWidth = width - spacing.lg * 2;
   const { supported, scanning, startScan } = useRoomScan();
+  const { analyzing, analyze } = useFengShuiAnalysis();
 
   const scanFloorPlan = async () => {
     const plan = await startScan();
-    if (plan) {
-      Alert.alert(
-        'Floor plan captured',
-        `${plan.floor.area.toFixed(1)} m² · ${plan.walls.length} walls, ${plan.doors.length} doors, ` +
-          `${plan.windows.length} windows, ${plan.objects.length} furniture items` +
-          (plan.compassAligned ? '\nAligned to north' : ''),
-      );
+    if (!plan) return;
+    const analysis = await analyze(plan);
+    if (analysis) {
+      navigation.navigate('FengShuiRating', { analysis });
+    } else {
+      Alert.alert('Could not analyze the room', 'Check that the scan server is running and your AI key is set.');
     }
   };
 
@@ -61,8 +62,8 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
       <View style={styles.footer}>
         <Button label="Begin scan" onPress={() => navigation.navigate('ScanRoom')} />
         {supported && (
-          <Pressable onPress={scanFloorPlan} disabled={scanning} accessibilityRole="button">
-            <Text style={styles.link}>{scanning ? 'Scanning…' : 'Map your room by hand'}</Text>
+          <Pressable onPress={scanFloorPlan} disabled={scanning || analyzing} accessibilityRole="button">
+            <Text style={styles.link}>{scanning ? 'Scanning…' : analyzing ? 'Reading the room…' : 'Map your room by hand'}</Text>
           </Pressable>
         )}
         <Text style={styles.note}>About a minute. Nothing leaves your phone yet.</Text>

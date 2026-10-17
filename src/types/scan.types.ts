@@ -1,4 +1,6 @@
 // scan.types.ts — shapes returned by the scan API
+import { FengShuiAnalysis } from './fengshui.types';
+
 export type ScanFrameInfo = {
   index: number;
   timestamp_sec: number;
@@ -10,5 +12,5 @@ export type ScanAnalysisResponse = {
   frame_count: number;
   duration_sec: number;
   frames: ScanFrameInfo[];
-  analysis: Record<string, unknown>;
+  analysis: FengShuiAnalysis;
 };
