@@ -7,6 +7,7 @@ import numpy as np
 
 from . import config
 from .frame_extractor import ExtractedFrame
+from .merge import merge_hazards
 
 COLORS = {"blocked_chi": (60, 60, 230), "poison_arrow": (70, 190, 70)}  # BGR: red blocks chi, green is a poison arrow
 
@@ -40,40 +41,43 @@ def _detect(image: np.ndarray, phrases: list[str]) -> list[list[dict]]:
     return [sorted(boxes, key=lambda b: -b["confidence"])[: config.DETECTOR_MAX_PER_SPOT] for boxes in found]
 
 
-def _annotate(image: np.ndarray, spots: list[dict]) -> np.ndarray:
+def _annotate(image: np.ndarray, hazards: list[dict]) -> np.ndarray:
     out = image.copy()
     height, width = out.shape[:2]
-    for spot in spots:
-        color = COLORS[spot["kind"]]
-        for hit in spot["detections"]:
-            x1, y1, x2, y2 = (int(v * s) for v, s in zip(hit["box"], (width, height, width, height)))
-            cv2.rectangle(out, (x1, y1), (x2, y2), color, 3)
-            label = f'{spot["detect"]} {hit["confidence"]:.2f}'
-            (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
-            cv2.rectangle(out, (x1, max(0, y1 - th - 8)), (x1 + tw + 6, y1), color, -1)
-            cv2.putText(out, label, (x1 + 3, max(th, y1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+    for hazard in hazards:
+        color = COLORS[hazard["kind"]]
+        x1, y1, x2, y2 = (int(v * s) for v, s in zip(hazard["box"], (width, height, width, height)))
+        cv2.rectangle(out, (x1, y1), (x2, y2), color, 3)
+        label = f'{" + ".join(hazard["labels"])} {hazard["confidence"]:.2f}'
+        (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+        cv2.rectangle(out, (x1, max(0, y1 - th - 8)), (x1 + tw + 6, y1), color, -1)
+        cv2.putText(out, label, (x1 + 3, max(th, y1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
     return out
 
 
 def locate_danger_spots(spots: list[dict], frames: list[ExtractedFrame], scan_id: str) -> list[dict]:
-    """Add `detections` (boxes with confidences) to each spot, by searching its photo for its `detect` phrase.
+    """Search each spot's photo for its `detect` phrase and return the merged hazards (see merge.py), one box each.
 
-    The spot's phrase is searched only in the photo the AI named. The annotated photos are written to
-    DEBUG_DIR/<scan_id>/ so the boxes can be checked by eye: red for chi blocking, green for poison arrows.
+    The annotated photos are written to DEBUG_DIR/<scan_id>/ so the boxes can be checked by eye:
+    red for chi blocking, green for poison arrows.
     """
     located = [{**spot, "detections": []} for spot in spots]
     by_photo: dict[int, list[dict]] = {}
     for spot in located:
         by_photo.setdefault(spot["photo"], []).append(spot)
 
+    images: dict[int, np.ndarray] = {}
     for photo, group in by_photo.items():
-        image = _decode(frames[photo - 1])
+        images[photo] = _decode(frames[photo - 1])
         phrases = list(dict.fromkeys(spot["detect"] for spot in group))
-        boxes = dict(zip(phrases, _detect(image, phrases)))
+        boxes = dict(zip(phrases, _detect(images[photo], phrases)))
         for spot in group:
             spot["detections"] = boxes[spot["detect"]]
-        if config.DEBUG_DIR:
-            folder = os.path.join(config.DEBUG_DIR, scan_id)
-            os.makedirs(folder, exist_ok=True)
-            cv2.imwrite(os.path.join(folder, f"photo{photo}.jpg"), _annotate(image, group))
-    return located
+
+    hazards = merge_hazards(located)
+    if config.DEBUG_DIR:
+        folder = os.path.join(config.DEBUG_DIR, scan_id)
+        os.makedirs(folder, exist_ok=True)
+        for photo, image in images.items():
+            cv2.imwrite(os.path.join(folder, f"photo{photo}.jpg"), _annotate(image, [h for h in hazards if h["photo"] == photo]))
+    return [{**h, "timestamp_sec": frames[h["photo"] - 1].timestamp_sec} for h in hazards]

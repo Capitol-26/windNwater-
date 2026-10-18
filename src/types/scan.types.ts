@@ -1,5 +1,6 @@
 // scan.types.ts — shapes returned by the scan API
 import { FengShuiAnalysis } from './fengshui.types';
+import { Hazard } from './hazard.types';
 
 export type ScanFrameInfo = {
   index: number;
@@ -14,4 +15,5 @@ export type ScanAnalysisResponse = {
   frames: ScanFrameInfo[];
   preview_image: string; // data URI of the last frame of the recording
   analysis: FengShuiAnalysis;
+  danger_spots: Hazard[]; // for the AR overlay, never shown as text
 };

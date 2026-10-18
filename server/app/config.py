@@ -45,3 +45,7 @@ DETECTOR_CONF = float(os.getenv("DETECTOR_CONF", "0.08"))  # open-vocabulary sco
 DETECTOR_MAX_PER_SPOT = int(os.getenv("DETECTOR_MAX_PER_SPOT", "2"))
 DETECTOR_IMGSZ = int(os.getenv("DETECTOR_IMGSZ", "960"))
 DEBUG_DIR = os.getenv("DANGER_DEBUG_DIR", str(_server_dir / "debug_boxes"))  # annotated frames land here; empty turns it off
+MERGE_IOU = float(os.getenv("MERGE_IOU", "0.5"))  # same kind, same photo, overlap above this: one hazard
+MERGE_CONTAINMENT = float(os.getenv("MERGE_CONTAINMENT", "0.85"))  # a box this far inside another one is the same hazard
+MIN_BOX_AREA = float(os.getenv("MIN_BOX_AREA", "0.003"))  # share of the photo; below is a speck
+MAX_BOX_AREA = float(os.getenv("MAX_BOX_AREA", "0.8"))  # above is the whole photo, not an object

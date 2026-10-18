@@ -5,7 +5,6 @@
 import argparse
 import asyncio
 import base64
-import json
 import uuid
 
 from app import config
@@ -34,8 +33,9 @@ else:
     print(f"AI sent {len(frames)} photos and asked for {len(spots)} danger spots")
 
 located = locate_danger_spots(spots, frames, scan_id)
-for spot in located:
-    hits = ", ".join(f'{h["confidence"]:.2f}' for h in spot["detections"]) or "NOT FOUND"
-    print(f'photo {spot["photo"]} {spot["kind"]:<12} "{spot["detect"]}" -> {hits}   ({spot["why"]})')
+asked = {s["detect"] for s in spots}
+for h in located:
+    print(f'photo {h["photo"]} {h["kind"]:<12} {" + ".join(h["labels"])!r} -> {h["confidence"]:.2f} box {h["box"]}   ({h["why"]})')
+for phrase in sorted(asked - {label for h in located for label in h["labels"]}):
+    print(f"NOT FOUND (or merged away): {phrase!r}")
 print(f"annotated photos: {config.DEBUG_DIR}/{scan_id}/")
-print(json.dumps(located, indent=1)) if args.spot else None
