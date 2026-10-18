@@ -67,12 +67,20 @@ def locate_danger_spots(spots: list[dict], frames: list[ExtractedFrame], scan_id
         by_photo.setdefault(spot["photo"], []).append(spot)
 
     images: dict[int, np.ndarray] = {}
-    for photo, group in by_photo.items():
+    for photo, group in list(by_photo.items()):
         images[photo] = _decode(frames[photo - 1])
         phrases = list(dict.fromkeys(spot["detect"] for spot in group))
-        boxes = dict(zip(phrases, _detect(images[photo], phrases)))
+        # Where the AI flagged chi blocking, also look for the usual things clutter is made of: a pile is boxed as one
+        # area (merge.py joins what lies close together), so the box does not shrink onto one item in it.
+        clutter = config.CLUTTER_PHRASES if any(spot["kind"] == "blocked_chi" for spot in group) else []
+        clutter = [p for p in clutter if p not in phrases]
+        found = dict(zip(phrases + clutter, _detect(images[photo], phrases + clutter)))
         for spot in group:
-            spot["detections"] = boxes[spot["detect"]]
+            spot["detections"] = found[spot["detect"]]
+        for phrase in clutter:
+            hits = [h for h in found[phrase] if h["confidence"] >= config.CLUTTER_CONF]
+            if hits:
+                located.append({"kind": "blocked_chi", "photo": photo, "detect": phrase, "target": "", "why": "an area of clutter", "detections": hits})
 
     hazards = merge_hazards(located)
     if config.DEBUG_DIR:

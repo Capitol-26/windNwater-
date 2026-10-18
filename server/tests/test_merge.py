@@ -15,7 +15,7 @@ def test_overlapping_same_kind_merges_and_keeps_both_labels():
         spot("blocked_chi", "large blue bag", ([0.5, 0.5, 0.9, 0.9], 0.4)),
         spot("blocked_chi", "plastic bags", ([0.52, 0.5, 0.9, 0.88], 0.3)),
     ])
-    assert len(out) == 1 and out[0]["confidence"] == 0.4 and out[0]["labels"] == ["large blue bag", "plastic bags"]
+    assert len(out) == 1 and out[0]["confidence"] == 0.4 and out[0]["labels"] == ["general clutter", "large blue bag", "plastic bags"]
 
 
 def test_box_inside_another_is_the_same_hazard():
@@ -32,3 +32,39 @@ def test_kinds_and_photos_never_merge():
 def test_whole_photo_and_specks_are_dropped():
     out = merge_hazards([spot("blocked_chi", "room", ([0, 0, 1, 1], 0.9)), spot("blocked_chi", "dot", ([0.5, 0.5, 0.51, 0.51], 0.9))])
     assert out == []
+
+
+def test_blocked_chi_boxes_that_touch_become_one_area_but_arrows_do_not():
+    cluster = merge_hazards([
+        spot("blocked_chi", "gray sneakers", ([0.30, 0.60, 0.38, 0.68], 0.5)),
+        spot("blocked_chi", "pile of bags", ([0.36, 0.50, 0.60, 0.75], 0.3)),
+        spot("blocked_chi", "paper bag", ([0.62, 0.55, 0.70, 0.72], 0.2)),  # a small gap away: still the same cluster
+    ])
+    assert len(cluster) == 1
+    assert cluster[0]["box"] == [0.30, 0.50, 0.70, 0.75]
+    assert cluster[0]["labels"][0] == "general clutter"  # different things joined: not named for any one of them
+
+    arrows = merge_hazards([
+        spot("poison_arrow", "table", ([0.1, 0.1, 0.3, 0.3], 0.5)),
+        spot("poison_arrow", "chair", ([0.33, 0.1, 0.5, 0.3], 0.4)),
+    ])
+    assert len(arrows) == 2
+
+
+def test_distant_blocked_chi_stay_separate():
+    out = merge_hazards([spot("blocked_chi", "a", ([0.0, 0.0, 0.2, 0.2], 0.5)), spot("blocked_chi", "b", ([0.6, 0.6, 0.8, 0.8], 0.5))])
+    assert len(out) == 2
+
+
+def test_a_pile_of_one_kind_of_thing_is_named_for_it():
+    out = merge_hazards([spot("blocked_chi", "cardboard box", ([0.1, 0.5, 0.3, 0.8], 0.5), ([0.4, 0.5, 0.6, 0.8], 0.4))])
+    assert len(out) == 1 and out[0]["labels"][0] == "pile of cardboard boxes"
+
+
+def test_a_single_item_keeps_its_own_label():
+    assert merge_hazards([spot("blocked_chi", "wooden chair", ([0.1, 0.5, 0.3, 0.8], 0.5))])[0]["labels"] == ["wooden chair"]
+
+
+def test_boxes_a_moderate_gap_apart_join():
+    out = merge_hazards([spot("blocked_chi", "bag", ([0.0, 0.5, 0.2, 0.8], 0.5)), spot("blocked_chi", "shoes", ([0.33, 0.5, 0.5, 0.8], 0.4))])
+    assert len(out) == 1

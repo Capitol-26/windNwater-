@@ -38,7 +38,7 @@ test('placeHazard puts an object where its base meets the floor and sizes it fro
   // base at upright (0.5, 0.89) is the pixel above; the box is 0.2 of the photo wide and 0.39 tall
   const placed = placeHazard(hazard([0.4, 0.5, 0.6, 0.89]), upright(0, 1.5, 0), 0)!;
   expect(placed.position[0]).toBeCloseTo(0);
-  expect(placed.position[2]).toBeCloseTo(-3);
+  expect(placed.position[2]).toBeCloseTo(-3 - placed.size[2] / 2); // its front face is on the floor point 3 m away, so the centre is half a depth beyond
   expect(placed.size[0]).toBeCloseTo(0.576, 2); // 288 px / 1500 * 3 m
   expect(placed.size[1]).toBeCloseTo(1.498, 2); // 749 px / 1500 * 3 m
   expect(placed.position[1]).toBeCloseTo(placed.size[1] / 2);

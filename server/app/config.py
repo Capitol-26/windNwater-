@@ -49,3 +49,15 @@ MERGE_IOU = float(os.getenv("MERGE_IOU", "0.5"))  # same kind, same photo, overl
 MERGE_CONTAINMENT = float(os.getenv("MERGE_CONTAINMENT", "0.85"))  # a box this far inside another one is the same hazard
 MIN_BOX_AREA = float(os.getenv("MIN_BOX_AREA", "0.003"))  # share of the photo; below is a speck
 MAX_BOX_AREA = float(os.getenv("MAX_BOX_AREA", "0.8"))  # above is the whole photo, not an object
+# Clutter: YOLO-World cannot find the abstract word "clutter", so where chi is blocked it also looks for the things
+# clutter is made of. Those that lie close together are joined into one area (see merge.py), not boxed item by item.
+CLUTTER_PHRASES = [
+    p.strip()
+    for p in os.getenv(
+        "CLUTTER_PHRASES",
+        "plastic bag,paper bag,cardboard box,pile of clothes,shoes,pile of papers,laundry basket,backpack,suitcase,toys",
+    ).split(",")
+    if p.strip()
+]
+CLUTTER_CONF = float(os.getenv("CLUTTER_CONF", "0.2"))  # these generic hits only count above this, so a tidy room gets no clutter box
+CLUSTER_GAP = float(os.getenv("CLUSTER_GAP", "0.15"))  # blocked-chi boxes closer than this (share of the photo) become one area
