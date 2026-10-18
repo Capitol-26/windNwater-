@@ -21,7 +21,6 @@ export default function FengShuiRatingScreen({
 }: NativeStackScreenProps<RootStackParamList, 'FengShuiRating'>) {
   const { analysis, previewImage } = route.params;
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const { layout } = analysis;
   const score = Math.round(Math.min(100, Math.max(0, analysis.overall_score)));
 
   return (
@@ -32,11 +31,6 @@ export default function FengShuiRatingScreen({
         <ViewfinderFrame fill>
           <Image source={{ uri: previewImage }} style={styles.photo} accessibilityIgnoresInvertColors />
         </ViewfinderFrame>
-        {layout && (
-          <View style={styles.compare}>
-            <Button label="compare" onPress={() => navigation.navigate('RoomLayout', { layout })} />
-          </View>
-        )}
       </View>
 
       <View style={styles.bottom}>
@@ -57,6 +51,7 @@ export default function FengShuiRatingScreen({
         onRequestClose={() => setDetailsOpen(false)}>
         <View style={styles.sheet}>
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheetContent}>
+            <Text style={styles.sheetTitle}>Overall feng shui score</Text>
             <View style={styles.bar}>
               <ScoreBar percent={score} dark />
             </View>
@@ -95,7 +90,6 @@ export default function FengShuiRatingScreen({
 const styles = StyleSheet.create({
   main: { flex: 1, paddingTop: 12, paddingBottom: 8 },
   photo: { flex: 1 },
-  compare: { paddingTop: 12 },
   bottom: { alignItems: 'center', paddingTop: 8 },
   seeMore: { alignItems: 'center' },
   bar: { alignItems: 'center', marginTop: spacing.sm },

@@ -37,4 +37,11 @@ AI_MAX_TOKENS = int(os.getenv("AI_MAX_TOKENS", "5000"))
 # Glimpse leaks its chain of thought into the answer and runs out of tokens when reasoning is on, so it is off by default.
 AI_REASONING = os.getenv("AI_REASONING", "off").lower() in ("on", "true", "1")
 AI_TIMEOUT_SEC = float(os.getenv("AI_TIMEOUT_SEC", "300"))
-AI_VERIFY = os.getenv("AI_VERIFY", "on").lower() in ("on", "true", "1")  # second pass: the model checks its own plan against the photos
+
+# Danger-spot detection: YOLO-World, an open-vocabulary YOLO that finds whatever noun phrase it is given.
+WEIGHTS_DIR = str(_server_dir / "weights")
+DETECTOR_MODEL = os.getenv("DETECTOR_MODEL", "yolov8s-worldv2.pt")  # also: yolov8m-worldv2.pt, yolov8l-worldv2.pt (slower, better)
+DETECTOR_CONF = float(os.getenv("DETECTOR_CONF", "0.08"))  # open-vocabulary scores run low; the debug images show what this keeps
+DETECTOR_MAX_PER_SPOT = int(os.getenv("DETECTOR_MAX_PER_SPOT", "2"))
+DETECTOR_IMGSZ = int(os.getenv("DETECTOR_IMGSZ", "960"))
+DEBUG_DIR = os.getenv("DANGER_DEBUG_DIR", str(_server_dir / "debug_boxes"))  # annotated frames land here; empty turns it off

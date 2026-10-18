@@ -1,9 +1,7 @@
 // useScanUpload.ts — tracks a scan video through upload and server-side analysis
 import { useCallback, useState } from 'react';
-import { detectFloor } from '../native/floorHomography';
 import { uploadScanVideo } from '../services/scanUploadService';
 import { ScanAnalysisResponse } from '../types/scan.types';
-import { projectLayout } from '../utils/floorProjection';
 
 export type ScanUploadState =
   | { status: 'idle' }
@@ -18,15 +16,9 @@ export function useScanUpload() {
   const upload = useCallback(async (videoPath: string) => {
     setState({ status: 'uploading', progress: 0 });
     try {
-      // Vision finds the floor first, so the server can place the furniture on it
-      const floor = await detectFloor(videoPath);
-      const result = await uploadScanVideo(
-        videoPath,
-        progress => setState(progress >= 1 ? { status: 'analyzing' } : { status: 'uploading', progress }),
-        floor?.timestamp,
+      const result = await uploadScanVideo(videoPath, progress =>
+        setState(progress >= 1 ? { status: 'analyzing' } : { status: 'uploading', progress }),
       );
-      const { layout } = result.analysis;
-      if (floor && layout) result.analysis.layout = projectLayout(layout, floor.homography);
       setState({ status: 'done', result });
     } catch (error) {
       setState({ status: 'error', message: error instanceof Error ? error.message : 'Upload failed.' });

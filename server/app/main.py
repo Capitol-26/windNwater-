@@ -5,12 +5,13 @@ import tempfile
 import time
 import uuid
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
 from . import config
 from .ai_client import AIError, analyze_frames
-from .frame_extractor import VideoReadError, extract_frame_at, extract_frames
+from .detector import locate_danger_spots
+from .frame_extractor import VideoReadError, extract_frames
 
 log = logging.getLogger("uvicorn.error")
 app = FastAPI(title="WindNWater scan API")
@@ -22,7 +23,7 @@ def health() -> dict:
 
 
 @app.post("/scans")
-async def create_scan(video: UploadFile = File(...), floor_time: float | None = Form(None)) -> dict:
+async def create_scan(video: UploadFile = File(...)) -> dict:
     started = time.perf_counter()
     suffix = os.path.splitext(video.filename or "")[1] or ".mov"
     max_bytes = config.MAX_UPLOAD_MB * 1024 * 1024
@@ -45,7 +46,6 @@ async def create_scan(video: UploadFile = File(...), floor_time: float | None = 
     try:
         # OpenCV decoding is blocking; run it off the event loop so other requests aren't stalled
         extraction = await run_in_threadpool(extract_frames, path)
-        floor_reference = await run_in_threadpool(extract_frame_at, path, floor_time) if floor_time is not None else None
     except VideoReadError as error:
         raise HTTPException(422, str(error))
     finally:
@@ -56,20 +56,31 @@ async def create_scan(video: UploadFile = File(...), floor_time: float | None = 
 
     extracted = time.perf_counter()
     try:
-        analysis = await analyze_frames(extraction.frames, floor_reference)
+        analysis, sent = await analyze_frames(extraction.frames)
     except AIError as error:
         raise HTTPException(error.status_code, str(error))
+
+    analyzed = time.perf_counter()
+    scan_id = uuid.uuid4().hex
+    # The danger spots are for the detector, not the user: they leave the analysis and go in their own field
+    spots = analysis.pop("danger_spots")
+    try:
+        danger_spots = await run_in_threadpool(locate_danger_spots, spots, sent, scan_id) if spots else []
+    except Exception:
+        log.exception("danger-spot detection failed")
+        danger_spots = []
 
     done = time.perf_counter()
     timings = {
         "receive_s": round(saved - started, 2),
         "extract_s": round(extracted - saved, 2),
-        "ai_s": round(done - extracted, 2),
+        "ai_s": round(analyzed - extracted, 2),
+        "detect_s": round(done - analyzed, 2),
     }
     log.info("scan: %.1f s of video -> %d frames | %s", extraction.duration_sec, len(extraction.frames), timings)
 
     return {
-        "scan_id": uuid.uuid4().hex,
+        "scan_id": scan_id,
         "frame_count": len(extraction.frames),
         "duration_sec": extraction.duration_sec,
         "frames": [
@@ -79,5 +90,6 @@ async def create_scan(video: UploadFile = File(...), floor_time: float | None = 
         "preview_image": f"data:image/jpeg;base64,{extraction.frames[-1].jpeg_base64}",
         "timings": timings,
         "analysis": analysis,
+        "danger_spots": danger_spots,
     }
 

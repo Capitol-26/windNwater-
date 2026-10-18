@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from . import config
 from .frame_extractor import ExtractedFrame
-from .prompts import REVIEW_PROMPT, SYSTEM_PROMPT, build_review_content, build_user_content
+from .prompts import SYSTEM_PROMPT, build_user_content
 from .schemas import FengShuiAnalysis, normalize
 
 
@@ -43,14 +43,14 @@ def _extract_json(text: str) -> dict:
         raise AIError(f"The AI reply was not valid JSON: {error}") from error
 
 
-async def _post(client: httpx.AsyncClient, content: list[dict], system: str = SYSTEM_PROMPT) -> httpx.Response:
+async def _post(client: httpx.AsyncClient, content: list[dict]) -> httpx.Response:
     return await client.post(
         _endpoint(),
         headers={"Authorization": f"Bearer {config.AI_API_KEY}", "Content-Type": "application/json"},
         json={
             "model": config.AI_MODEL,
             "messages": [
-                {"role": "system", "content": system},
+                {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": content},
             ],
             "temperature": 0.3,
@@ -84,37 +84,27 @@ def _read_reply(response: httpx.Response) -> dict:
     return _extract_json(reply)
 
 
-def _validate(raw: dict) -> dict:
+def _validate(raw: dict, photo_count: int) -> dict:
     try:
-        return normalize(FengShuiAnalysis.model_validate(raw))
+        return normalize(FengShuiAnalysis.model_validate(raw), photo_count)
     except ValidationError as error:
         raise AIError(f"The AI reply was missing required fields: {error.errors()[0]['loc']}") from error
 
 
-async def analyze_frames(frames: list[ExtractedFrame], floor_reference: ExtractedFrame | None = None) -> dict:
-    """Send the room photos to the AI and return a validated feng shui analysis.
-
-    The first pass drafts the analysis; a second pass shows the model the same photos with its draft and asks it to
-    correct the plan. If the second pass fails for any reason, the draft is returned.
-    """
+async def analyze_frames(frames: list[ExtractedFrame]) -> tuple[dict, list[ExtractedFrame]]:
+    """Send the room photos to the AI. Returns the validated analysis and the photos it was actually shown, in order
+    (the analysis's danger spots count photos from 1 in that list)."""
     if not config.AI_API_KEY:
         raise AIError("No AI key is set. Add AI_API_KEY (your OpenRouter key) to your .env file.", 503)
     if not frames:
         raise AIError("Nothing to analyze.", 422)
 
-    frames = _evenly_spaced(frames, config.AI_MAX_IMAGES)
+    sent = _evenly_spaced(frames, config.AI_MAX_IMAGES)
     try:
         async with httpx.AsyncClient(timeout=config.AI_TIMEOUT_SEC) as client:
-            draft = _read_reply(await _post(client, build_user_content(frames, floor_reference)))
-            result = _validate(draft)
-            if config.AI_VERIFY and result.get("layout"):
-                try:
-                    reviewed = _read_reply(await _post(client, build_review_content(frames, draft, floor_reference), REVIEW_PROMPT))
-                    result = _validate(reviewed)
-                except (AIError, httpx.HTTPError):
-                    pass  # keep the draft
-            return result
+            reply = _read_reply(await _post(client, build_user_content(sent)))
     except httpx.TimeoutException as error:
         raise AIError("The AI took too long to respond.", 504) from error
     except httpx.HTTPError as error:
         raise AIError(f"Could not reach the AI service: {error}") from error
+    return _validate(reply, len(sent)), sent

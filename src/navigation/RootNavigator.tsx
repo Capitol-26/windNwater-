@@ -2,7 +2,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import IntroScreen from '../screens/IntroScreen';
 import FengShuiRatingScreen from '../screens/FengShuiRatingScreen';
-import RoomLayoutScreen from '../screens/RoomLayoutScreen';
 import ScanRoomScreen from '../screens/ScanRoomScreen';
 import { RootStackParamList } from './navigation.types';
 
@@ -18,8 +17,6 @@ export default function RootNavigator() {
         options={{ animation: 'fade', gestureEnabled: false }}
       />
       <Stack.Screen name="FengShuiRating" component={FengShuiRatingScreen} />
-      {/* no swipe-back here: dragging the compare slider must never dismiss the screen */}
-      <Stack.Screen name="RoomLayout" component={RoomLayoutScreen} options={{ gestureEnabled: false }} />
     </Stack.Navigator>
   );
 }

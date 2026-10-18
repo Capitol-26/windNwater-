@@ -25,46 +25,12 @@ class Recommendation(BaseModel):
     priority: Literal["high", "medium", "low"] = "medium"
 
 
-class Opening(BaseModel):
-    kind: Literal["door", "window"]
-    wall: Literal["north", "east", "south", "west"]
-    offset: float = 0  # metres from the wall's start (west end of a north/south wall, north end of an east/west wall) to the opening's centre
-    width: float = 0.9
-
-
-class Item(BaseModel):
-    name: str
-    x: float  # centre, metres from the room's west wall
-    y: float  # centre, metres from the room's north wall
-    width: float  # extent along x, metres
-    depth: float  # extent along y, metres
-    floor_uv: tuple[float, float] | None = None  # where its base meets the floor in the floor reference photo, 0-1 from the top-left
-
-
-class OptimalItem(BaseModel):
-    name: str
-    x: float
-    y: float
-    width: float | None = None  # a 90 degree turn swaps width and depth
-    depth: float | None = None
-    reason: str = ""
-    added: bool = False  # a new piece the recommendations suggest bringing in, not one already in the room
-
-
-class Zone(BaseModel):
-    x: float  # centre, metres
-    y: float
-    width: float
-    depth: float
-
-
-class Layout(BaseModel):
-    width: float  # room extent along x, metres
-    length: float  # room extent along y, metres
-    openings: list[Opening] = Field(default_factory=list)
-    items: list[Item] = Field(default_factory=list)
-    optimal_items: list[OptimalItem] = Field(default_factory=list)
-    clutter: list[Zone] = Field(default_factory=list)  # floor areas to clear
+class DangerSpot(BaseModel):
+    kind: Literal["blocked_chi", "poison_arrow"]
+    photo: int  # 1-based number of the photo the spot is clearest in
+    detect: str  # short noun phrase for the object detector
+    target: str = ""  # what it blocks, or what the arrow points at
+    why: str = ""
 
 
 class FengShuiAnalysis(BaseModel):
@@ -73,102 +39,27 @@ class FengShuiAnalysis(BaseModel):
     summary: str = ""
     elements: Elements
     recommendations: list[Recommendation] = Field(default_factory=list)
-    layout: Layout | None = None
+    danger_spots: list[DangerSpot] = Field(default_factory=list)
 
 
-MIN_ROOM, MAX_ROOM, MAX_ITEMS, MAX_ADDED, MAX_CLUTTER = 1.5, 15.0, 14, 4, 4
+MAX_DANGER_SPOTS = 8
 
 
-def _fit(centre: float, size: float, room: float) -> tuple[float, float]:
-    """Shrink `size` to the room and slide `centre` so the item stays inside it."""
-    size = min(size, room)
-    return min(max(centre, size / 2), room - size / 2), size
-
-
-def _separate(entries: list[dict], width: float, length: float) -> None:
-    """Push overlapping pieces apart along the axis where they overlap least, keeping every piece inside the room."""
-    for _ in range(30):
-        moved = False
-        for i, a in enumerate(entries):
-            for b in entries[i + 1 :]:
-                over_x = (a["width"] + b["width"]) / 2 - abs(a["x"] - b["x"])
-                over_y = (a["depth"] + b["depth"]) / 2 - abs(a["y"] - b["y"])
-                # a small overlap is estimation noise (and rugs legitimately sit under furniture); only fix real collisions
-                if over_x <= 0.1 or over_y <= 0.1 or "rug" in a["name"] + b["name"]:
-                    continue
-                axis, over = ("x", over_x) if over_x < over_y else ("y", over_y)
-                sign = 1 if a[axis] >= b[axis] else -1
-                a[axis] += sign * over / 2
-                b[axis] -= sign * over / 2
-                for entry in (a, b):
-                    entry["x"], _ = _fit(entry["x"], entry["width"], width)
-                    entry["y"], _ = _fit(entry["y"], entry["depth"], length)
-                moved = True
-        if not moved:
-            break
-    for entry in entries:
-        entry["x"], entry["y"] = round(entry["x"], 2), round(entry["y"], 2)
-
-
-def _normalize_layout(layout: Layout) -> dict | None:
-    """Keep every item inside the room, and give the optimal layout exactly the current items."""
-    width = min(MAX_ROOM, max(MIN_ROOM, layout.width))
-    length = min(MAX_ROOM, max(MIN_ROOM, layout.length))
-
-    items: list[dict] = []
-    for item in layout.items[:MAX_ITEMS]:
-        if item.width <= 0.05 or item.depth <= 0.05:
+def _normalize_spots(spots: list[DangerSpot], photo_count: int) -> list[dict]:
+    """Drop spots that name no object or a photo that was not sent, and duplicates of the same object in the same photo."""
+    seen: set[tuple[int, str]] = set()
+    kept: list[dict] = []
+    for spot in spots:
+        detect = " ".join(spot.detect.lower().split())
+        if not detect or not 1 <= spot.photo <= photo_count or (spot.photo, detect) in seen:
             continue
-        x, w = _fit(item.x, item.width, width)
-        y, d = _fit(item.y, item.depth, length)
-        entry = {"name": item.name, "x": round(x, 2), "y": round(y, 2), "width": round(w, 2), "depth": round(d, 2)}
-        if item.floor_uv and all(0 <= c <= 1 for c in item.floor_uv):
-            entry["floor_uv"] = [round(c, 4) for c in item.floor_uv]
-        items.append(entry)
-    if not items:
-        return None
-
-    proposed = {entry.name: entry for entry in layout.optimal_items}
-    optimal: list[dict] = []
-    for item in items:
-        entry = proposed.get(item["name"])
-        if entry is None:  # the model left it out: it stays where it is
-            optimal.append({**{k: v for k, v in item.items() if k != "floor_uv"}, "reason": "", "added": False})
-            continue
-        x, w = _fit(entry.x, entry.width or item["width"], width)
-        y, d = _fit(entry.y, entry.depth or item["depth"], length)
-        optimal.append({"name": item["name"], "x": round(x, 2), "y": round(y, 2), "width": round(w, 2), "depth": round(d, 2), "reason": entry.reason, "added": False})
-
-    # pieces the recommendations add (a plant, a lamp...): anything optimal that is not already in the room
-    known = {item["name"] for item in items}
-    for entry in layout.optimal_items:
-        if entry.name in known or sum(o["added"] for o in optimal) >= MAX_ADDED:
-            continue
-        known.add(entry.name)
-        x, w = _fit(entry.x, entry.width or 0.5, width)
-        y, d = _fit(entry.y, entry.depth or 0.5, length)
-        optimal.append({"name": entry.name, "x": round(x, 2), "y": round(y, 2), "width": round(w, 2), "depth": round(d, 2), "reason": entry.reason, "added": True})
-
-    _separate(items, width, length)
-    _separate(optimal, width, length)
-
-    clutter = []
-    for zone in layout.clutter[:MAX_CLUTTER]:
-        if zone.width <= 0.05 or zone.depth <= 0.05:
-            continue
-        x, w = _fit(zone.x, zone.width, width)
-        y, d = _fit(zone.y, zone.depth, length)
-        clutter.append({"x": round(x, 2), "y": round(y, 2), "width": round(w, 2), "depth": round(d, 2)})
-
-    openings = [
-        {"kind": o.kind, "wall": o.wall, "offset": round(max(0.0, o.offset), 2), "width": round(min(max(o.width, 0.4), 3.0), 2)}
-        for o in layout.openings[:8]
-    ]
-    return {"width": round(width, 2), "length": round(length, 2), "openings": openings, "items": items, "optimal_items": optimal, "clutter": clutter}
+        seen.add((spot.photo, detect))
+        kept.append({"kind": spot.kind, "photo": spot.photo, "detect": detect, "target": spot.target.strip(), "why": spot.why.strip()})
+    return kept[:MAX_DANGER_SPOTS]
 
 
-def normalize(analysis: FengShuiAnalysis) -> dict:
-    """Clamp the score and make the element percentages sum to exactly 100."""
+def normalize(analysis: FengShuiAnalysis, photo_count: int) -> dict:
+    """Clamp the score, make the element percentages sum to exactly 100 and tidy the danger spots."""
     data = analysis.model_dump()
     data["overall_score"] = int(round(min(100, max(0, analysis.overall_score))))
 
@@ -181,5 +72,5 @@ def normalize(analysis: FengShuiAnalysis) -> dict:
     rounded[strongest] += 100 - sum(rounded.values())
     for name in ELEMENTS:
         data["elements"][name]["percent"] = rounded[name]
-    data["layout"] = _normalize_layout(analysis.layout) if analysis.layout else None
+    data["danger_spots"] = _normalize_spots(analysis.danger_spots, photo_count)
     return data

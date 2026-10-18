@@ -81,3 +81,5 @@ yarn-error.log
 # Python server
 server/.venv/
 __pycache__/
+server/debug_boxes/
+server/weights/

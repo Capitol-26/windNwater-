@@ -1,6 +1,4 @@
-# prompts.py — the feng shui prompts and the helper that builds the AI request
-import json
-
+# prompts.py — the feng shui prompt and the helper that builds the AI request
 from .frame_extractor import ExtractedFrame
 
 SYSTEM_PROMPT = """You are an experienced feng shui consultant. You are given a scan of one room, as photos taken while walking around it. Assess it and reply with ONE JSON object and nothing else. Be brief: short sentences, no preamble.
@@ -16,11 +14,10 @@ How to assess:
    - water: black and deep blue, flowing shapes, mirrors, glass
    Give each element a percent of the room's elemental makeup. The five percents MUST sum to 100.
 
-Layout accuracy matters more than speed. Work out the room BEFORE placing anything: first fix the walls and which photos show which wall, then match every piece of furniture and every door and window that appears in more than one photo to a single object (never list one object twice, never split one into two). Anchor the scale on objects of known size (door 0.9 m wide and 2.0 m tall, ceiling about 2.5 m, bed 1.9 m long, sofa 2 m, chair seat 0.45 m, desk 0.7 m deep, standard outlet or switch height 1.1 m). Check that the pieces' footprints add up to a plausible floor area and that none overlap or poke through a wall. A piece against a wall must have its edge touching that wall (centre = half its size from the wall). Only list what you actually see in the photos.
-
-Layout: also draw the room from above, in metres. Estimate its floor size from the photos (a door is about 0.9 m wide, a bed 1.5-2 m long, a sofa about 2 m). Use x for west to east and y for north to south, with the origin at the room's north-west corner; pick the north wall so the layout matches the photos as you walk around. List the doors and windows you can see and the main furniture (at most 12 pieces), each with its centre (x, y) and its size (width along x, depth along y). Then give optimal_items: the SAME pieces, by the same name, moved to the best feng shui arrangement for this room: command position for bed, desk and main seat, nothing blocking the door or the walkway from it, no piece in line between door and window, and everything inside the room without overlapping. Do not remove furniture. If one of your recommendations adds a piece (a plant, a lamp, a mirror, a rug), also put that piece in optimal_items, where it belongs, with "added": true and its size (at most 4 additions). If a recommendation is to clear clutter, list the floor areas where the clutter is in "clutter" (at most 4 areas, empty if there is none). A piece may turn 90 degrees by swapping its width and depth. Keep each reason under 10 words and leave a piece where it is when it is already well placed.
-
-Floor landmarks: when a final photo is marked as the FLOOR REFERENCE, also give each piece in items a "floor_uv": [u, v], the point where the piece meets the floor (the middle of its base) in that photo, as fractions of its width and height with the origin at the top-left. Leave floor_uv out for a piece that is not visible in the reference photo. Never guess a position.
+Danger spots: also find the things in the room that disturb chi, for a separate object detector that only sees one photo at a time and is NOT shown to the user. Two kinds:
+- "blocked_chi": something that stops chi flowing: clutter or a pile of things on the floor, boxes, bags, laundry, an obstacle or piece of furniture standing in a walkway or in front of a door, window or the path from the door, a doorway or hallway crowded with objects.
+- "poison_arrow": a sharp corner or edge pointing at a landmark where people sit, sleep or enter: the corner of a table, desk, shelf, cabinet, pillar or wall aimed at a bed, a seat, a desk chair or a door.
+For each, give "photo" (the number of the one photo, counting from 1, where it is clearest and fully in frame) and "detect": the label the detector will search for. The detector is an open-vocabulary YOLO model that matches SHORT noun phrases to what it sees, so "detect" must be 2 to 5 lowercase words naming ONE visible physical object or group of objects, with its colour or material when that helps, e.g. "pile of cardboard boxes", "black laundry basket", "wooden dining chair", "square glass coffee table", "tall white bookshelf". Name the WHOLE object, never a part of it or its state: no "corner", "edge", "top", "side", no "cluttered", "messy", "blocking", no sentence, verb or direction, and no concept like "clutter" or "blocked path" on its own (the detector cannot find those). Say "wooden dresser", not "cluttered wooden dresser top" or "dresser corner". Be as specific as the photo allows so only the right object matches: if there are two similar objects, add where it is ("left", "by the window") or what is on it. For a poison_arrow, "detect" names the piece of furniture or structure that has the sharp corner (the source), and "target" names the landmark it points at (a bed, a chair, a door). For blocked_chi, "target" is what it obstructs (the doorway, the walkway to the window) or "" if nothing in particular. "why" is one short sentence for the log. Only list spots that are really there and clearly visible in a photo. Give at most 8, most harmful first, and an empty list if the room has none.
 
 Scoring: overall_score is an integer from 0 to 100. 50 is an average room; 80+ is genuinely good; below 30 is poor. Do not inflate scores. Base every claim on evidence from the scan and never invent furniture, colors or windows you cannot see. If the photos show little of the room, say so in the summary.
 
@@ -37,37 +34,14 @@ Reply with exactly this JSON shape:
     "water": {"percent": 0-100, "evidence": "under 8 words"}
   },
   "recommendations": [{"title": "short action", "detail": "one short sentence", "priority": "high | medium | low"}],
-  "layout": {
-    "width": metres, "length": metres,
-    "openings": [{"kind": "door | window", "wall": "north | east | south | west", "offset": metres along the wall from its west or north end to the centre, "width": metres}],
-    "items": [{"name": "short lowercase name", "x": metres, "y": metres, "width": metres, "depth": metres, "floor_uv": [0-1, 0-1] (only with a floor reference photo)}],
-    "optimal_items": [{"name": "same name", "x": metres, "y": metres, "width": metres, "depth": metres, "reason": "under 10 words", "added": true only for a new piece}],
-    "clutter": [{"x": metres, "y": metres, "width": metres, "depth": metres}]
-  }
+  "danger_spots": [{"kind": "blocked_chi | poison_arrow", "photo": 1-based photo number, "detect": "2 to 5 word object phrase", "target": "what it blocks or points at", "why": "one short sentence"}]
 }
 Give 3 or 4 recommendations, most important first."""
 
-def build_user_content(frames: list[ExtractedFrame], floor_reference: ExtractedFrame | None = None) -> list[dict]:
-    """The user message: instructions followed by the photos in the order they were taken, then the floor reference."""
-    text = f"Assess the feng shui of this room. {len(frames)} photos of it follow, in the order they were taken."
-    if floor_reference:
-        text += " The photo after them is the FLOOR REFERENCE."
+def build_user_content(frames: list[ExtractedFrame]) -> list[dict]:
+    """The user message: instructions followed by the photos in the order they were taken."""
+    text = f"Assess the feng shui of this room. {len(frames)} photos of it follow, in the order they were taken (photo 1 is the first)."
     content: list[dict] = [{"type": "text", "text": text}]
-    for frame in [*frames, *([floor_reference] if floor_reference else [])]:
+    for frame in frames:
         content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{frame.jpeg_base64}"}})
-    return content
-
-
-REVIEW_PROMPT = """You are checking a top-down room plan against the photos it was drawn from. Below the photos is a DRAFT JSON analysis. Go through the draft item by item and fix every mistake you can see in the photos:
-- every door, window and piece of furniture in the draft must really be in the photos, and every clearly visible one must be in the draft (once each)
-- each opening is on the right wall, at the right offset, with a realistic width
-- each piece has a realistic size and sits where the photos put it: against the wall it touches, at the right distance from the corners and from the other pieces
-- the room's width and length are consistent with the pieces and openings in it (a bed against one wall and a door on the opposite wall cannot be 2 m apart in a 5 m room)
-- nothing overlaps or sticks out of the room, in items or in optimal_items; optimal_items still lists the same pieces by the same names
-Keep what is right. Reply with the corrected analysis as ONE JSON object in exactly the same shape as the draft, and nothing else."""
-
-def build_review_content(frames: list[ExtractedFrame], draft: dict, floor_reference: ExtractedFrame | None = None) -> list[dict]:
-    """The review message: the same photos again, then the draft to check against them."""
-    content = build_user_content(frames, floor_reference)
-    content.append({"type": "text", "text": "DRAFT:\n" + json.dumps(draft, separators=(",", ":"))})
     return content
