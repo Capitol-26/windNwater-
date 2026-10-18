@@ -26,7 +26,7 @@ source .venv/bin/activate
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 python -m pytest tests
 ```
-The detector needs two model files in `server/weights/` (git-ignored): `yolov8s-worldv2.pt` (downloaded on first use) and the CLIP text encoder `clip/ViT-B-32.pt` (from `https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt`; put it there if the automatic download is blocked). The server loads them at startup.
+The detector's two model files are in `server/weights/` (`yolov8s-worldv2.pt` and the CLIP text encoder `clip/ViT-B-32.pt`, about 380 MB). They are stored with Git LFS, so run `brew install git-lfs && git lfs install` once before cloning (or `git lfs pull` in an existing clone). The server loads them at startup. The YOLO-World weights come from Ultralytics under AGPL-3.0 and CLIP is MIT-licensed; check that the AGPL terms suit how you deploy.
 
 Create a `.env` in the repo root:
 ```
