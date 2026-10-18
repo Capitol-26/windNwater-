@@ -21,8 +21,8 @@ npm run ios
 The app records a video and uploads it to `server/`, which uses OpenCV to pull out sharp, distinct frames and sends them to the AI with the prompts in `server/app/prompts.py`. The AI returns the score, the element balance, recommendations and a list of danger spots; YOLO-World then finds each one in the photos (`server/app/detector.py`, `arrows.py`, `merge.py`) and the server returns the boxes. The app places them in the room with the camera poses ARKit recorded (`src/utils/raycast.ts`).
 ```sh
 cd server
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+./setup.sh                      # venv + requirements, with only the headless OpenCV (see the script)
+source .venv/bin/activate
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 python -m pytest tests
 ```

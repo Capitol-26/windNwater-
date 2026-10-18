@@ -82,4 +82,8 @@ yarn-error.log
 server/.venv/
 __pycache__/
 server/debug_boxes/
-server/weights/
+
+# Design-tool skills (local only)
+.agents/
+.claude/skills/
+skills-lock.json

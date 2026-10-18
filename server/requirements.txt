@@ -1,6 +1,7 @@
 fastapi>=0.115,<1
 uvicorn[standard]>=0.32,<1
 python-multipart>=0.0.12
+# Install with ./setup.sh: ultralytics also pulls in the full opencv-python, and setup.sh removes it again
 opencv-python-headless>=4.10,<5
 numpy>=1.26,<3
 httpx>=0.27,<1
