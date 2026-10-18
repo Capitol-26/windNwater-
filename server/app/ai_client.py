@@ -1,5 +1,6 @@
 # ai_client.py — the single place where extracted frames are sent to the AI model
 import json
+import logging
 import re
 
 import httpx
@@ -9,6 +10,9 @@ from . import config
 from .frame_extractor import ExtractedFrame
 from .prompts import SYSTEM_PROMPT, build_user_content
 from .schemas import FengShuiAnalysis, normalize
+
+
+log = logging.getLogger("uvicorn.error")
 
 
 class AIError(Exception):
@@ -70,7 +74,8 @@ def _read_reply(response: httpx.Response) -> dict:
     if response.status_code == 429:
         raise AIError("The AI service is rate limiting requests. Try again in a moment.", 429)
     if response.status_code >= 400:
-        raise AIError(f"The AI service returned {response.status_code}: {response.text[:200]}")
+        log.warning("AI service returned %s: %s", response.status_code, response.text[:200])
+        raise AIError(f"The AI service returned {response.status_code}.")
 
     try:
         choice = response.json()["choices"][0]

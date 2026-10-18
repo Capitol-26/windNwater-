@@ -108,21 +108,3 @@ def extract_frames(video_path: str) -> ExtractionResult:
         frame.index = i
 
     return ExtractionResult(frames=frames, duration_sec=round(total / fps, 2), fps=round(fps, 2))
-
-
-def extract_frame_at(video_path: str, seconds: float) -> ExtractedFrame | None:
-    """One frame at `seconds`, resized like the others. The app picks this moment as the one with the clearest floor."""
-    capture = cv2.VideoCapture(video_path)
-    try:
-        capture.set(cv2.CAP_PROP_POS_MSEC, max(0.0, seconds) * 1000)
-        ok, frame = capture.read()
-    finally:
-        capture.release()
-    if not ok:
-        return None
-    frame = _resize(frame)
-    encoded, buffer = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, config.JPEG_QUALITY])
-    if not encoded:
-        return None
-    sharp = _sharpness(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
-    return ExtractedFrame(index=-1, timestamp_sec=round(seconds, 2), sharpness=round(sharp, 1), jpeg_base64=base64.b64encode(buffer).decode("ascii"))

@@ -16,7 +16,7 @@ export function uploadScanVideo(
 
     const request = new XMLHttpRequest();
     request.open('POST', `${SCAN_API_URL}/scans`);
-    request.timeout = 180000;
+    request.timeout = 360000; // longer than the server's own AI timeout, so the server's error comes back first
     request.setRequestHeader('Accept', 'application/json');
 
     request.upload.onprogress = event => {

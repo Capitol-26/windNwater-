@@ -1,20 +1,39 @@
 # main.py — FastAPI app: receives a scan video, extracts frames with OpenCV, passes them to the AI
+import asyncio
 import logging
 import os
 import tempfile
 import time
 import uuid
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
 from . import config
 from .ai_client import AIError, analyze_frames
-from .detector import locate_danger_spots
+from .detector import locate_danger_spots, warm_up
 from .frame_extractor import VideoReadError, extract_frames
 
 log = logging.getLogger("uvicorn.error")
-app = FastAPI(title="WindNWater scan API")
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # warm the detector in the background: the server answers /health at once and the first scan is not slow
+    async def load() -> None:
+        try:
+            await run_in_threadpool(warm_up)
+        except Exception:
+            log.exception("could not warm up the detector; it will load on the first scan")
+
+    task = asyncio.create_task(load())
+    yield
+    task.cancel()
+
+
+# This is an API for the app, not a website: no interactive docs or schema are served
+app = FastAPI(title="WindNWater scan API", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
 
 @app.get("/health")
@@ -87,7 +106,6 @@ async def create_scan(video: UploadFile = File(...)) -> dict:
             {"index": f.index, "timestamp_sec": f.timestamp_sec, "sharpness": f.sharpness}
             for f in extraction.frames
         ],
-        "preview_image": f"data:image/jpeg;base64,{extraction.frames[-1].jpeg_base64}",
         "timings": timings,
         "analysis": analysis,
         "danger_spots": danger_spots,

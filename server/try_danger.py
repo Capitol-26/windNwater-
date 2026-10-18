@@ -5,6 +5,7 @@
 import argparse
 import asyncio
 import base64
+import os
 import uuid
 
 from app import config
@@ -16,6 +17,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("path")
 parser.add_argument("--spot", nargs=2, action="append", metavar=("KIND", "PHRASE"), help="skip the AI and search a photo for these")
 args = parser.parse_args()
+config.DEBUG_DIR = config.DEBUG_DIR or os.path.join(os.path.dirname(os.path.abspath(__file__)), "debug_boxes")  # this tool exists to write them
 scan_id = "try-" + uuid.uuid4().hex[:8]
 
 if args.spot:

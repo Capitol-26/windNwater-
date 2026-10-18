@@ -1,5 +1,6 @@
 # detector.py — finds the AI's danger spots in the photos with YOLO-World, an open-vocabulary YOLO that takes text labels
 import os
+import threading
 from functools import lru_cache
 
 import cv2
@@ -25,6 +26,15 @@ def _model():
     return YOLOWorld(os.path.join(config.WEIGHTS_DIR, config.DETECTOR_MODEL))
 
 
+_model_lock = threading.Lock()  # set_classes changes the model in place, so two scans must not use it at once
+
+
+def warm_up() -> None:
+    """Load the model and its text encoder now, so the first scan does not wait for them."""
+    with _model_lock:
+        _model().set_classes(["warm up"])
+
+
 def _decode(frame: ExtractedFrame) -> np.ndarray:
     import base64
 
@@ -33,9 +43,10 @@ def _decode(frame: ExtractedFrame) -> np.ndarray:
 
 def _detect(image: np.ndarray, phrases: list[str]) -> list[list[dict]]:
     """Boxes for each phrase in one image, best first. Coordinates are fractions of the image, origin top-left."""
-    model = _model()
-    model.set_classes(phrases)
-    result = model.predict(image, conf=config.DETECTOR_CONF, imgsz=config.DETECTOR_IMGSZ, verbose=False)[0]
+    with _model_lock:
+        model = _model()
+        model.set_classes(phrases)
+        result = model.predict(image, conf=config.DETECTOR_CONF, imgsz=config.DETECTOR_IMGSZ, verbose=False)[0]
     found: list[list[dict]] = [[] for _ in phrases]
     for (x1, y1, x2, y2), cls, conf in zip(result.boxes.xyxyn.tolist(), result.boxes.cls.tolist(), result.boxes.conf.tolist()):
         found[int(cls)].append({"box": [round(x1, 4), round(y1, 4), round(x2, 4), round(y2, 4)], "confidence": round(conf, 3)})
