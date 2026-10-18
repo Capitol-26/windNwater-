@@ -85,6 +85,31 @@ def _fit(centre: float, size: float, room: float) -> tuple[float, float]:
     return min(max(centre, size / 2), room - size / 2), size
 
 
+def _separate(entries: list[dict], width: float, length: float) -> None:
+    """Push overlapping pieces apart along the axis where they overlap least, keeping every piece inside the room."""
+    for _ in range(30):
+        moved = False
+        for i, a in enumerate(entries):
+            for b in entries[i + 1 :]:
+                over_x = (a["width"] + b["width"]) / 2 - abs(a["x"] - b["x"])
+                over_y = (a["depth"] + b["depth"]) / 2 - abs(a["y"] - b["y"])
+                # a small overlap is estimation noise (and rugs legitimately sit under furniture); only fix real collisions
+                if over_x <= 0.1 or over_y <= 0.1 or "rug" in a["name"] + b["name"]:
+                    continue
+                axis, over = ("x", over_x) if over_x < over_y else ("y", over_y)
+                sign = 1 if a[axis] >= b[axis] else -1
+                a[axis] += sign * over / 2
+                b[axis] -= sign * over / 2
+                for entry in (a, b):
+                    entry["x"], _ = _fit(entry["x"], entry["width"], width)
+                    entry["y"], _ = _fit(entry["y"], entry["depth"], length)
+                moved = True
+        if not moved:
+            break
+    for entry in entries:
+        entry["x"], entry["y"] = round(entry["x"], 2), round(entry["y"], 2)
+
+
 def _normalize_layout(layout: Layout) -> dict | None:
     """Keep every item inside the room, and give the optimal layout exactly the current items."""
     width = min(MAX_ROOM, max(MIN_ROOM, layout.width))
@@ -123,6 +148,9 @@ def _normalize_layout(layout: Layout) -> dict | None:
         x, w = _fit(entry.x, entry.width or 0.5, width)
         y, d = _fit(entry.y, entry.depth or 0.5, length)
         optimal.append({"name": entry.name, "x": round(x, 2), "y": round(y, 2), "width": round(w, 2), "depth": round(d, 2), "reason": entry.reason, "added": True})
+
+    _separate(items, width, length)
+    _separate(optimal, width, length)
 
     clutter = []
     for zone in layout.clutter[:MAX_CLUTTER]:

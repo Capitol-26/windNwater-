@@ -13,16 +13,6 @@ export function fitPlan(room: Pick<RoomLayout, 'width' | 'length'>, boxWidth: nu
   };
 }
 
-// Grid positions in metres: a line every half metre, `major` on whole metres
-export function gridLines(size: number): { minor: number[]; major: number[] } {
-  const minor: number[] = [];
-  const major: number[] = [];
-  for (let step = 1; step * 0.5 < size; step++) {
-    (step % 2 === 0 ? major : minor).push(step * 0.5);
-  }
-  return { minor, major };
-}
-
 type Point = { x: number; y: number };
 
 // A door or window as a segment on its wall (metres), plus the unit vector pointing into the room

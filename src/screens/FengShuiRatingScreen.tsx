@@ -46,15 +46,8 @@ export default function FengShuiRatingScreen({
           accessibilityLabel="See more"
           hitSlop={12}
           style={styles.seeMore}>
-          <CaretUp size={28} weight="bold" color={colors.paper} />
-          <Text style={styles.seeMoreText}>see more</Text>
+          <CaretUp size={32} weight="bold" color={colors.paper} />
         </Pressable>
-        <View style={styles.bar}>
-          <ScoreBar percent={score} />
-        </View>
-        <Text style={styles.score} accessibilityLabel={`Your feng shui score is ${score} out of 100`}>
-          {score}%
-        </Text>
       </View>
 
       <Modal
@@ -64,6 +57,13 @@ export default function FengShuiRatingScreen({
         onRequestClose={() => setDetailsOpen(false)}>
         <View style={styles.sheet}>
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheetContent}>
+            <View style={styles.bar}>
+              <ScoreBar percent={score} dark />
+            </View>
+            <Text style={styles.score} accessibilityLabel={`Your feng shui score is ${score} out of 100`}>
+              {score}%
+            </Text>
+
             <Text style={styles.sheetTitle}>
               {analysis.room_type.charAt(0).toUpperCase() + analysis.room_type.slice(1)}
             </Text>
@@ -98,9 +98,8 @@ const styles = StyleSheet.create({
   compare: { paddingTop: 12 },
   bottom: { alignItems: 'center', paddingTop: 8 },
   seeMore: { alignItems: 'center' },
-  seeMoreText: { ...typography.caption, color: colors.paper },
-  bar: { marginTop: 14, marginBottom: 10, maxWidth: '100%' },
-  score: { ...typography.display, fontSize: 56, lineHeight: 62, color: colors.paper },
+  bar: { alignItems: 'center', marginTop: spacing.sm },
+  score: { ...typography.display, fontSize: 56, lineHeight: 62, color: colors.ink },
   sheet: { flex: 1, backgroundColor: colors.sand },
   sheetContent: { padding: spacing.lg, gap: spacing.md },
   sheetTitle: { ...typography.title, color: colors.ink, marginTop: spacing.sm },

@@ -44,8 +44,8 @@ def _resize(frame):
     return cv2.resize(frame, (config.MAX_FRAME_WIDTH, int(height * scale)), interpolation=cv2.INTER_AREA)
 
 
-MAX_GAP_SEC = 4.0  # never go longer than this without a frame, however similar the view looks
-MIN_FRAMES = 4  # if fewer frames pass the sharpness check, fall back to the sharpest ones
+MAX_GAP_SEC = 2.0  # never go longer than this without a frame, however similar the view looks
+MIN_FRAMES = 8  # if fewer frames pass the sharpness check, fall back to the sharpest ones
 
 
 def extract_frames(video_path: str) -> ExtractionResult:

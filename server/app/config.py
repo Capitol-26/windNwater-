@@ -19,10 +19,10 @@ def _env(*names: str, default: str = "") -> str:
 
 
 # Frame extraction
-FRAME_INTERVAL_SEC = float(os.getenv("FRAME_INTERVAL_SEC", "1.0"))  # sample one frame per interval
-MAX_FRAMES = int(os.getenv("MAX_FRAMES", "24"))  # hard cap on frames extracted from the video
-MAX_FRAME_WIDTH = int(os.getenv("MAX_FRAME_WIDTH", "640"))  # downscale before encoding
-JPEG_QUALITY = int(os.getenv("JPEG_QUALITY", "75"))
+FRAME_INTERVAL_SEC = float(os.getenv("FRAME_INTERVAL_SEC", "0.5"))  # sample one frame per interval
+MAX_FRAMES = int(os.getenv("MAX_FRAMES", "40"))  # hard cap on frames extracted from the video
+MAX_FRAME_WIDTH = int(os.getenv("MAX_FRAME_WIDTH", "1024"))  # downscale before encoding
+JPEG_QUALITY = int(os.getenv("JPEG_QUALITY", "85"))
 MIN_SHARPNESS = float(os.getenv("MIN_SHARPNESS", "30.0"))  # Laplacian variance; below = blurry
 MAX_SIMILARITY = float(os.getenv("MAX_SIMILARITY", "0.97"))  # histogram correlation; above = duplicate
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "120"))
@@ -32,8 +32,9 @@ MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "120"))
 AI_API_KEY = _env("AI_API_KEY", "OPENROUTER_API_KEY")
 AI_BASE_URL = _env("AI_BASE_URL", default="https://openrouter.ai/api/v1")
 AI_MODEL = _env("AI_MODEL", default="elorian/glimpse")
-AI_MAX_IMAGES = int(os.getenv("AI_MAX_IMAGES", "6"))  # frames actually sent to the model
-AI_MAX_TOKENS = int(os.getenv("AI_MAX_TOKENS", "3500"))
+AI_MAX_IMAGES = int(os.getenv("AI_MAX_IMAGES", "12"))  # frames actually sent to the model
+AI_MAX_TOKENS = int(os.getenv("AI_MAX_TOKENS", "5000"))
 # Glimpse leaks its chain of thought into the answer and runs out of tokens when reasoning is on, so it is off by default.
 AI_REASONING = os.getenv("AI_REASONING", "off").lower() in ("on", "true", "1")
-AI_TIMEOUT_SEC = float(os.getenv("AI_TIMEOUT_SEC", "180"))
+AI_TIMEOUT_SEC = float(os.getenv("AI_TIMEOUT_SEC", "300"))
+AI_VERIFY = os.getenv("AI_VERIFY", "on").lower() in ("on", "true", "1")  # second pass: the model checks its own plan against the photos

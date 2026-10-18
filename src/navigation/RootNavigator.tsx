@@ -18,7 +18,8 @@ export default function RootNavigator() {
         options={{ animation: 'fade', gestureEnabled: false }}
       />
       <Stack.Screen name="FengShuiRating" component={FengShuiRatingScreen} />
-      <Stack.Screen name="RoomLayout" component={RoomLayoutScreen} />
+      {/* no swipe-back here: dragging the compare slider must never dismiss the screen */}
+      <Stack.Screen name="RoomLayout" component={RoomLayoutScreen} options={{ gestureEnabled: false }} />
     </Stack.Navigator>
   );
 }

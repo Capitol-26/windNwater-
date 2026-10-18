@@ -1,5 +1,5 @@
 // roomLayout.test.ts — geometry used to draw the 2D room plan
-import { fitPlan, gridLines, openingGeometry } from '../src/utils/roomLayout';
+import { fitPlan, openingGeometry } from '../src/utils/roomLayout';
 
 const room = { width: 4, length: 3 };
 
@@ -8,10 +8,6 @@ test('fitPlan scales to the tighter side and centres the room', () => {
   expect(fit.scale).toBe(50); // (220 - 20) / 4
   expect(fit.originX).toBe(10);
   expect(fit.originY).toBe(125); // (400 - 150) / 2
-});
-
-test('gridLines puts whole metres in major and half metres in minor, excluding the walls', () => {
-  expect(gridLines(2.5)).toEqual({ minor: [0.5, 1.5], major: [1, 2] });
 });
 
 test('openingGeometry keeps the opening on its wall and points inward', () => {

@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from . import config
 from .frame_extractor import ExtractedFrame
-from .prompts import SYSTEM_PROMPT, build_user_content
+from .prompts import REVIEW_PROMPT, SYSTEM_PROMPT, build_review_content, build_user_content
 from .schemas import FengShuiAnalysis, normalize
 
 
@@ -43,14 +43,14 @@ def _extract_json(text: str) -> dict:
         raise AIError(f"The AI reply was not valid JSON: {error}") from error
 
 
-async def _post(client: httpx.AsyncClient, content: list[dict]) -> httpx.Response:
+async def _post(client: httpx.AsyncClient, content: list[dict], system: str = SYSTEM_PROMPT) -> httpx.Response:
     return await client.post(
         _endpoint(),
         headers={"Authorization": f"Bearer {config.AI_API_KEY}", "Content-Type": "application/json"},
         json={
             "model": config.AI_MODEL,
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": system},
                 {"role": "user", "content": content},
             ],
             "temperature": 0.3,
@@ -61,22 +61,8 @@ async def _post(client: httpx.AsyncClient, content: list[dict]) -> httpx.Respons
     )
 
 
-async def analyze_frames(frames: list[ExtractedFrame], floor_reference: ExtractedFrame | None = None) -> dict:
-    """Send the room photos to the AI and return a validated feng shui analysis."""
-    if not config.AI_API_KEY:
-        raise AIError("No AI key is set. Add AI_API_KEY (your OpenRouter key) to your .env file.", 503)
-    if not frames:
-        raise AIError("Nothing to analyze.", 422)
-
-    frames = _evenly_spaced(frames, config.AI_MAX_IMAGES)
-    try:
-        async with httpx.AsyncClient(timeout=config.AI_TIMEOUT_SEC) as client:
-            response = await _post(client, build_user_content(frames, floor_reference))
-    except httpx.TimeoutException as error:
-        raise AIError("The AI took too long to respond.", 504) from error
-    except httpx.HTTPError as error:
-        raise AIError(f"Could not reach the AI service: {error}") from error
-
+def _read_reply(response: httpx.Response) -> dict:
+    """Turn an AI response into the model's JSON object, raising AIError with a useful message otherwise."""
     if response.status_code == 400:
         raise AIError("The AI model rejected the photos. Use a vision-capable model (AI_MODEL).")
     if response.status_code in (401, 403):
@@ -95,9 +81,40 @@ async def analyze_frames(frames: list[ExtractedFrame], floor_reference: Extracte
         # The model can spend the whole token budget and return no answer.
         hint = " Try raising AI_MAX_TOKENS." if choice.get("finish_reason") == "length" else ""
         raise AIError("The AI returned an empty answer." + hint)
+    return _extract_json(reply)
 
+
+def _validate(raw: dict) -> dict:
     try:
-        return normalize(FengShuiAnalysis.model_validate(_extract_json(reply)))
+        return normalize(FengShuiAnalysis.model_validate(raw))
     except ValidationError as error:
         raise AIError(f"The AI reply was missing required fields: {error.errors()[0]['loc']}") from error
 
+
+async def analyze_frames(frames: list[ExtractedFrame], floor_reference: ExtractedFrame | None = None) -> dict:
+    """Send the room photos to the AI and return a validated feng shui analysis.
+
+    The first pass drafts the analysis; a second pass shows the model the same photos with its draft and asks it to
+    correct the plan. If the second pass fails for any reason, the draft is returned.
+    """
+    if not config.AI_API_KEY:
+        raise AIError("No AI key is set. Add AI_API_KEY (your OpenRouter key) to your .env file.", 503)
+    if not frames:
+        raise AIError("Nothing to analyze.", 422)
+
+    frames = _evenly_spaced(frames, config.AI_MAX_IMAGES)
+    try:
+        async with httpx.AsyncClient(timeout=config.AI_TIMEOUT_SEC) as client:
+            draft = _read_reply(await _post(client, build_user_content(frames, floor_reference)))
+            result = _validate(draft)
+            if config.AI_VERIFY and result.get("layout"):
+                try:
+                    reviewed = _read_reply(await _post(client, build_review_content(frames, draft, floor_reference), REVIEW_PROMPT))
+                    result = _validate(reviewed)
+                except (AIError, httpx.HTTPError):
+                    pass  # keep the draft
+            return result
+    except httpx.TimeoutException as error:
+        raise AIError("The AI took too long to respond.", 504) from error
+    except httpx.HTTPError as error:
+        raise AIError(f"Could not reach the AI service: {error}") from error
