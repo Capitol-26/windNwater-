@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 
 from . import config
+from .arrows import find_arrows
 from .frame_extractor import ExtractedFrame
 from .merge import merge_hazards
 
@@ -81,6 +82,18 @@ def locate_danger_spots(spots: list[dict], frames: list[ExtractedFrame], scan_id
             hits = [h for h in found[phrase] if h["confidence"] >= config.CLUTTER_CONF]
             if hits:
                 located.append({"kind": "blocked_chi", "photo": photo, "detect": phrase, "target": "", "why": "an area of clutter", "detections": hits})
+
+    # Every photo is also searched for angular objects beside a landmark, so poison arrows the AI did not name are still marked
+    arrow_phrases = list(dict.fromkeys(config.LANDMARK_PHRASES + config.ANGULAR_PHRASES + config.FIXTURE_PHRASES))
+    for photo, frame in enumerate(frames, start=1):
+        image = images.get(photo)
+        if image is None:
+            image = _decode(frame)
+        found = dict(zip(arrow_phrases, _detect(image, arrow_phrases)))
+        arrows = find_arrows(found, photo)
+        if arrows:
+            images[photo] = image
+            located.extend(arrows)
 
     hazards = merge_hazards(located)
     if config.DEBUG_DIR:

@@ -3,6 +3,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from . import config
+
 ELEMENTS = ("wood", "fire", "earth", "metal", "water")
 
 
@@ -53,6 +55,8 @@ def _normalize_spots(spots: list[DangerSpot], photo_count: int) -> list[dict]:
         detect = " ".join(spot.detect.lower().split())
         if not detect or not 1 <= spot.photo <= photo_count or (spot.photo, detect) in seen:
             continue
+        if spot.kind == "poison_arrow" and any(word in detect for word in config.FIXTURE_WORDS):
+            continue  # architecture (doors, windows, walls, pillars) is never a poison arrow
         seen.add((spot.photo, detect))
         kept.append({"kind": spot.kind, "photo": spot.photo, "detect": detect, "target": spot.target.strip(), "why": spot.why.strip()})
     return kept[:MAX_DANGER_SPOTS]

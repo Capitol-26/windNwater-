@@ -58,3 +58,17 @@ def test_distant_blocked_chi_stay_separate():
 
 def test_a_single_item_keeps_its_own_label():
     assert merge_hazards([spot("blocked_chi", "wooden chair", ([0.1, 0.5, 0.3, 0.8], 0.5))])[0]["labels"] == ["wooden chair"]
+
+
+def test_a_joined_area_stays_under_the_size_cap():
+    # each pair touches, but joining all four would cover most of the photo
+    boxes = [[0.0, 0.0, 0.5, 0.5], [0.5, 0.0, 1.0, 0.5], [0.0, 0.5, 0.5, 1.0], [0.5, 0.5, 1.0, 1.0]]
+    out = merge_hazards([spot("blocked_chi", f"item{i}", (b, 0.5)) for i, b in enumerate(boxes)])
+    assert len(out) > 1 and all((h["box"][2] - h["box"][0]) * (h["box"][3] - h["box"][1]) <= 0.45 + 1e-9 for h in out)
+
+
+def test_ai_named_architecture_is_not_a_poison_arrow():
+    from app.schemas import DangerSpot, _normalize_spots
+
+    spots = [DangerSpot(kind="poison_arrow", photo=1, detect=d) for d in ["wooden door", "stone pillar", "glass coffee table"]]
+    assert [s["detect"] for s in _normalize_spots(spots, 1)] == ["glass coffee table"]

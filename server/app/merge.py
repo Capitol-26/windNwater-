@@ -83,7 +83,7 @@ def merge_hazards(spots: list[dict]) -> list[dict]:
             for b in hazards[i + 1 :]:
                 if a["kind"] == b["kind"] == "blocked_chi" and a["photo"] == b["photo"] and _gap(a["box"], b["box"]) <= config.CLUSTER_GAP:
                     box = _union(a["box"], b["box"])
-                    if _area(box) <= config.MAX_BOX_AREA:
+                    if _area(box) <= config.CLUSTER_MAX_AREA:
                         _absorb(a, b, box)
                         hazards.remove(b)
                         merged = True

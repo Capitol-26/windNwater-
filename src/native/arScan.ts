@@ -18,7 +18,7 @@ type ARScanModule = {
   resetSession(): Promise<void>;
   startRecording(): Promise<void>;
   stopRecording(): Promise<ScanRecording>;
-  placeHazards(items: { kind: string; label: string; position: number[]; size: number[]; yaw: number }[]): Promise<void>;
+  placeHazards(items: { kind: string; position: number[]; size: number[]; yaw: number }[]): Promise<void>;
 };
 
 const native = NativeModules.ARScan as ARScanModule;
@@ -31,9 +31,9 @@ export const ARScan = {
   resetSession: () => native.resetSession(),
   startRecording: () => native.startRecording(),
   stopRecording: () => native.stopRecording(),
-  // red boxes for blocked chi, green for poison arrows; the native view draws them wherever it is shown
+  // red boxes for blocked chi, green for poison arrows; boxes carry no text, the native view draws them wherever it is shown
   placeHazards: (hazards: PlacedHazard[]) =>
-    native.placeHazards(hazards.map(h => ({ kind: h.kind, label: h.labels[0] ?? '', position: h.position, size: h.size, yaw: h.yaw }))),
+    native.placeHazards(hazards.map(h => ({ kind: h.kind, position: h.position, size: h.size, yaw: h.yaw }))),
 };
 
 // The camera preview. Showing it starts the ARKit session if it is not running; hiding it leaves the session running.
