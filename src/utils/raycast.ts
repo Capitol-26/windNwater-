@@ -46,13 +46,9 @@ export function placeHazard(hazard: Hazard, sample: CameraSample, floorY: number
   // the upright box's width runs along the sensor's y axis, its height along the sensor's x axis
   const width = (((x2 - x1) * sample.imageSize.height) / sample.intrinsics.fy) * hit.depth;
   const height = (((y2 - y1) * sample.imageSize.width) / sample.intrinsics.fx) * hit.depth;
-  const depth = Math.max(width, 0.3); // one side says nothing about how deep it is; assume square
-  // The box's bottom edge is where the object's FRONT meets the floor, so its centre is half a depth farther from the camera
-  const away = Math.hypot(hit.point[0] - hit.origin[0], hit.point[2] - hit.origin[2]) || 1;
-  const x = hit.point[0] + ((hit.point[0] - hit.origin[0]) / away) * (depth / 2);
-  const z = hit.point[2] + ((hit.point[2] - hit.origin[2]) / away) * (depth / 2);
-  const yaw = Math.atan2(hit.origin[0] - x, hit.origin[2] - z);
-  return { ...hazard, position: [x, floorY + height / 2, z], size: [width, height, depth], yaw };
+  const depth = Math.max(width, 0.2); // one side says nothing about how deep it is; assume square
+  const yaw = Math.atan2(hit.origin[0] - hit.point[0], hit.origin[2] - hit.point[2]);
+  return { ...hazard, position: [hit.point[0], floorY + height / 2, hit.point[2]], size: [width, height, depth], yaw };
 }
 
 // The same hazard seen in several photos lands near the same floor point: average those into one

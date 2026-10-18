@@ -15,7 +15,7 @@ def test_overlapping_same_kind_merges_and_keeps_both_labels():
         spot("blocked_chi", "large blue bag", ([0.5, 0.5, 0.9, 0.9], 0.4)),
         spot("blocked_chi", "plastic bags", ([0.52, 0.5, 0.9, 0.88], 0.3)),
     ])
-    assert len(out) == 1 and out[0]["confidence"] == 0.4 and out[0]["labels"] == ["general clutter", "large blue bag", "plastic bags"]
+    assert len(out) == 1 and out[0]["confidence"] == 0.4 and out[0]["labels"] == ["large blue bag", "plastic bags"]
 
 
 def test_box_inside_another_is_the_same_hazard():
@@ -42,7 +42,7 @@ def test_blocked_chi_boxes_that_touch_become_one_area_but_arrows_do_not():
     ])
     assert len(cluster) == 1
     assert cluster[0]["box"] == [0.30, 0.50, 0.70, 0.75]
-    assert cluster[0]["labels"][0] == "general clutter"  # different things joined: not named for any one of them
+    assert cluster[0]["labels"][0] == "pile of bags"  # the label of the biggest box leads
 
     arrows = merge_hazards([
         spot("poison_arrow", "table", ([0.1, 0.1, 0.3, 0.3], 0.5)),
@@ -56,15 +56,5 @@ def test_distant_blocked_chi_stay_separate():
     assert len(out) == 2
 
 
-def test_a_pile_of_one_kind_of_thing_is_named_for_it():
-    out = merge_hazards([spot("blocked_chi", "cardboard box", ([0.1, 0.5, 0.3, 0.8], 0.5), ([0.4, 0.5, 0.6, 0.8], 0.4))])
-    assert len(out) == 1 and out[0]["labels"][0] == "pile of cardboard boxes"
-
-
 def test_a_single_item_keeps_its_own_label():
     assert merge_hazards([spot("blocked_chi", "wooden chair", ([0.1, 0.5, 0.3, 0.8], 0.5))])[0]["labels"] == ["wooden chair"]
-
-
-def test_boxes_a_moderate_gap_apart_join():
-    out = merge_hazards([spot("blocked_chi", "bag", ([0.0, 0.5, 0.2, 0.8], 0.5)), spot("blocked_chi", "shoes", ([0.33, 0.5, 0.5, 0.8], 0.4))])
-    assert len(out) == 1

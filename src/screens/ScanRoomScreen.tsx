@@ -153,7 +153,6 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
             onPress={() =>
               navigation.navigate('FengShuiRating', {
                 analysis: upload.result.analysis,
-                previewImage: upload.result.preview_image,
                 hazardCount: pinned ?? 0,
               })
             }

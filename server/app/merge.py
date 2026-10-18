@@ -40,24 +40,10 @@ def _absorb(into: dict, other: dict, box: Box) -> None:
     # the label of the bigger box goes first: it names the whole area, not a thing inside it
     first, second = (into, other) if _area(into["box"]) >= _area(other["box"]) else (other, into)
     into["labels"] = list(dict.fromkeys(first["labels"] + second["labels"]))
-    into["parts"] = into["parts"] + other["parts"]
     into["box"] = box
     into["confidence"] = max(into["confidence"], other["confidence"])
     into["target"] = into["target"] or other["target"]
     into["why"] = into["why"] or other["why"]
-
-
-def _plural(noun: str) -> str:
-    return noun + ("es" if noun.endswith(("s", "x", "sh", "ch")) else "s")
-
-
-def _pile_title(parts: list[str]) -> str:
-    """Name for several chi-blocking boxes joined into one: "pile of bags" when they are all the same thing, else "general clutter"."""
-    kinds = set(parts)
-    if len(kinds) == 1:
-        what = parts[0]
-        return what if what.startswith(("pile of", "pile")) else f"pile of {_plural(what)}"
-    return "general clutter"
 
 
 def merge_hazards(spots: list[dict]) -> list[dict]:
@@ -74,7 +60,7 @@ def merge_hazards(spots: list[dict]) -> list[dict]:
             if config.MIN_BOX_AREA <= _area(hit["box"]) <= config.MAX_BOX_AREA:
                 hits.append({
                     "kind": spot["kind"], "photo": spot["photo"], "box": list(hit["box"]), "confidence": hit["confidence"],
-                    "labels": [spot["detect"]], "parts": [spot["detect"]], "target": spot["target"], "why": spot["why"],
+                    "labels": [spot["detect"]], "target": spot["target"], "why": spot["why"],
                 })
 
     hazards: list[dict] = []
@@ -105,10 +91,4 @@ def merge_hazards(spots: list[dict]) -> list[dict]:
             if merged:
                 break
 
-    # a joined area is named for what it is made of; the detector's own labels follow it
-    for hazard in hazards:
-        if hazard["kind"] == "blocked_chi" and len(hazard["parts"]) > 1:
-            title = _pile_title(hazard["parts"])
-            hazard["labels"] = [title] + [label for label in hazard["labels"] if label != title]
-        del hazard["parts"]
     return hazards

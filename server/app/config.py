@@ -60,4 +60,4 @@ CLUTTER_PHRASES = [
     if p.strip()
 ]
 CLUTTER_CONF = float(os.getenv("CLUTTER_CONF", "0.2"))  # these generic hits only count above this, so a tidy room gets no clutter box
-CLUSTER_GAP = float(os.getenv("CLUSTER_GAP", "0.15"))  # blocked-chi boxes closer than this (share of the photo) become one area
+CLUSTER_GAP = float(os.getenv("CLUSTER_GAP", "0.06"))  # blocked-chi boxes closer than this (share of the photo) become one area
