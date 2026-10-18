@@ -80,3 +80,26 @@ export function sampleAt(samples: CameraSample[], timestamp: number): CameraSamp
     null,
   );
 }
+
+const CAMERA_HEIGHT = 1.4; // metres: a phone held while walking a room, used when ARKit found no floor
+
+// The floor height: ARKit's plane when it found one, else the typical phone height below the median camera height
+export function floorHeight(floorY: number | null | undefined, samples: CameraSample[]): number | null {
+  if (typeof floorY === 'number') return floorY;
+  if (samples.length === 0) return null;
+  const heights = samples.map(s => s.transform[13]).sort((a, b) => a - b);
+  return heights[Math.floor(heights.length / 2)] - CAMERA_HEIGHT;
+}
+
+// Every hazard the server found, in world coordinates, with the same hazard from different photos merged
+export function placeAll(hazards: Hazard[], samples: CameraSample[], floorY: number | null | undefined): PlacedHazard[] {
+  const floor = floorHeight(floorY, samples);
+  if (floor === null) return [];
+  const placed: PlacedHazard[] = [];
+  for (const hazard of hazards) {
+    const sample = sampleAt(samples, hazard.timestamp_sec);
+    const result = sample && placeHazard(hazard, sample, floor);
+    if (result) placed.push(result);
+  }
+  return mergeAcrossPhotos(placed);
+}

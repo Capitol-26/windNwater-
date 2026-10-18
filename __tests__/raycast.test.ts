@@ -1,6 +1,6 @@
 // raycast.test.ts — an upright phone 1.5 m up, looking along world -Z, floor at y = 0, so the geometry is checkable by hand
 import { CameraSample, Hazard } from '../src/types/hazard.types';
-import { floorHit, mergeAcrossPhotos, placeHazard, sampleAt, uprightToSensor } from '../src/utils/raycast';
+import { floorHit, mergeAcrossPhotos, placeAll, placeHazard, sampleAt, uprightToSensor } from '../src/utils/raycast';
 
 const image = { width: 1920, height: 1440 };
 const intrinsics = { fx: 1500, fy: 1500, cx: 960, cy: 720 };
@@ -66,4 +66,13 @@ test('the same hazard seen from two places merges into one, and different kinds 
 test('sampleAt finds the nearest sample in time', () => {
   expect(sampleAt([upright(0, 1, 0, 0), upright(0, 1, 0, 1), upright(0, 1, 0, 2)], 1.4)!.timestamp_sec).toBe(1);
   expect(sampleAt([], 1)).toBeNull();
+});
+
+test('placeAll uses the pose nearest each photo, falls back to a phone-height floor and merges the repeats', () => {
+  const near = hazard([0.4, 0.5, 0.6, 0.89], { timestamp_sec: 0.1 });
+  const again = hazard([0.4, 0.5, 0.6, 0.89], { timestamp_sec: 2.1, confidence: 0.3 });
+  const samples = [upright(0, 1.5, 0, 0), upright(0, 1.5, 0, 2)];
+  expect(placeAll([near, again], samples, 0)).toHaveLength(1);
+  expect(placeAll([near], samples, null)[0].position[2]).toBeCloseTo(-3, 0); // median height 1.5 - 1.4 = floor at 0.1
+  expect(placeAll([near], [], null)).toEqual([]);
 });

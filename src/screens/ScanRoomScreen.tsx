@@ -3,15 +3,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import Reanimated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Camera, useCameraDevice, useCameraFormat, useCameraPermission } from 'react-native-vision-camera';
 import BackButton from '../components/common/BackButton';
 import Button from '../components/common/Button';
 import LoadingOverlay from '../components/common/LoadingOverlay';
 import ScreenContainer from '../components/common/ScreenContainer';
 import ViewfinderFrame from '../components/common/ViewfinderFrame';
+import { ARScan, ARScanView } from '../native/arScan';
 import { MAX_SCAN_SECONDS, MIN_SCAN_SECONDS } from '../constants/config';
 import { useScanUpload } from '../hooks/useScanUpload';
 import { RootStackParamList } from '../navigation/navigation.types';
+import { placeAll } from '../utils/raycast';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
@@ -20,11 +21,9 @@ const formatTime = (s: number) =>
   `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
 export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'ScanRoom'>) {
-  const { hasPermission, requestPermission } = useCameraPermission();
-  const device = useCameraDevice('back');
-  // 720p at a low bitrate keeps the file small; the server only needs ~640px-wide frames.
-  const format = useCameraFormat(device, [{ videoResolution: { width: 1280, height: 720 } }, { fps: 24 }]);
-  const camera = useRef<Camera>(null);
+  const [permission, setPermission] = useState<'granted' | 'denied' | 'undetermined'>('undetermined');
+  const [supported, setSupported] = useState(true);
+  const [pinned, setPinned] = useState<number | null>(null); // danger spots pinned in the room once the analysis is back
   const { state: upload, upload: uploadVideo, reset: resetUpload } = useScanUpload();
 
   const [recording, setRecording] = useState(false);
@@ -34,16 +33,25 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
   const stopping = useRef(false);
   const morph = useRef(new Animated.Value(0)).current;
 
+  // The camera keeps running while the server works. When the analysis is back, the danger spots are pinned in the
+  // room it was scanned in, and the live view shows them.
   useEffect(() => {
-    if (upload.status === 'done') navigation.replace('FengShuiRating', {
-        analysis: upload.result.analysis,
-        previewImage: upload.result.preview_image,
-      });
-  }, [upload, navigation]);
+    if (upload.status !== 'done') return;
+    const { danger_spots, camera_samples = [], floor_y } = upload.result;
+    const placed = placeAll(danger_spots ?? [], camera_samples, floor_y);
+    ARScan.placeHazards(placed).then(() => setPinned(placed.length));
+  }, [upload]);
 
   useEffect(() => {
-    if (!hasPermission) requestPermission();
-  }, [hasPermission, requestPermission]);
+    ARScan.isSupported().then(setSupported);
+    ARScan.cameraPermission().then(async current => {
+      if (current === 'undetermined') current = (await ARScan.requestCameraPermission()) ? 'granted' : 'denied';
+      if (current === 'granted') await ARScan.resetSession(); // a new scan starts a new world
+      setPermission(current);
+    });
+  }, []);
+  const hasPermission = permission === 'granted';
+  const ready = hasPermission && supported;
 
   useEffect(() => {
     Animated.timing(morph, {
@@ -66,11 +74,11 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
     limitTimer.current = null;
     setRecording(false);
     try {
-      await camera.current?.stopRecording();
+      uploadVideo(await ARScan.stopRecording());
     } catch (error) {
       setRecordError(error instanceof Error ? error.message : 'The recording could not be saved.');
     }
-  }, []);
+  }, [uploadVideo]);
 
   useEffect(() => () => {
     if (limitTimer.current) clearTimeout(limitTimer.current);
@@ -87,17 +95,14 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
       setRecording(true);
       // the limit is its own timer, so it ends and sends the scan whatever the on-screen clock is doing
       limitTimer.current = setTimeout(stopRecording, MAX_SCAN_SECONDS * 1000);
-      camera.current?.startRecording({
-        fileType: 'mov',
-        videoCodec: 'h264',
-        onRecordingFinished: video => uploadVideo(video.path),
-        onRecordingError: error => {
-          if (limitTimer.current) clearTimeout(limitTimer.current);
-          stopping.current = true;
-          setRecording(false);
-          setRecordError(error.message);
-        },
-      });
+      try {
+        await ARScan.startRecording();
+      } catch (error) {
+        if (limitTimer.current) clearTimeout(limitTimer.current);
+        stopping.current = true;
+        setRecording(false);
+        setRecordError(error instanceof Error ? error.message : 'The recording could not start.');
+      }
     } else if (seconds >= MIN_SCAN_SECONDS) {
       await stopRecording();
     }
@@ -111,24 +116,14 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
       {navigation.canGoBack() && <BackButton onPress={() => navigation.goBack()} label="Close scanner" />}
 
       <View style={styles.main}>
-        <ViewfinderFrame fill dark={!(hasPermission && device)}>
-          {hasPermission && device ? (
-            <Camera
-              ref={camera}
-              style={StyleSheet.absoluteFill}
-              device={device}
-              format={format}
-              fps={24}
-              videoBitRate="extra-low"
-              isActive
-              video
-              audio={false}
-            />
+        <ViewfinderFrame fill dark={!ready}>
+          {ready ? (
+            <ARScanView style={StyleSheet.absoluteFill} />
           ) : (
             <View style={styles.fallback}>
               <Text style={styles.fallbackText}>
                 {hasPermission
-                  ? 'No camera found. Run on a physical iPhone to scan a room.'
+                  ? 'Scanning needs an iPhone with ARKit. Run on a physical iPhone to scan a room.'
                   : 'Allow camera access to scan your room.'}
               </Text>
               {!hasPermission && (
@@ -139,7 +134,7 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
             </View>
           )}
 
-          {!recording && (
+          {!recording && upload.status === 'idle' && (
             <Reanimated.View
               entering={FadeIn.delay(500).duration(500)}
               exiting={FadeOut.duration(300)}
@@ -151,6 +146,23 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
         </ViewfinderFrame>
       </View>
 
+      {upload.status === 'done' ? (
+        <View style={styles.bottom}>
+          <Button
+            label="see score"
+            onPress={() =>
+              navigation.navigate('FengShuiRating', {
+                analysis: upload.result.analysis,
+                previewImage: upload.result.preview_image,
+                hazardCount: pinned ?? 0,
+              })
+            }
+          />
+          <Text style={styles.label}>
+            {pinned === null ? 'placing danger spots' : pinned === 0 ? 'no danger spots found' : `${pinned} danger spot${pinned === 1 ? '' : 's'} pinned · look around`}
+          </Text>
+        </View>
+      ) : (
       <View style={styles.bottom}>
         <Pressable
           onPress={toggleRecording}
@@ -170,8 +182,9 @@ export default function ScanRoomScreen({ navigation }: NativeStackScreenProps<Ro
             : 'click to start'}
         </Text>
       </View>
+      )}
 
-      {(upload.status === 'uploading' || upload.status === 'analyzing' || upload.status === 'done') && (
+      {(upload.status === 'uploading' || upload.status === 'analyzing') && (
         <LoadingOverlay
           phase={upload.status === 'uploading' ? 'uploading' : 'analyzing'}
           uploadProgress={upload.status === 'uploading' ? upload.progress : 1}

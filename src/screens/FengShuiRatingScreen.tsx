@@ -19,13 +19,13 @@ export default function FengShuiRatingScreen({
   route,
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'FengShuiRating'>) {
-  const { analysis, previewImage } = route.params;
+  const { analysis, previewImage, hazardCount } = route.params;
   const [detailsOpen, setDetailsOpen] = useState(false);
   const score = Math.round(Math.min(100, Math.max(0, analysis.overall_score)));
 
   return (
     <ScreenContainer variant="result">
-      <BackButton onPress={() => navigation.replace('ScanRoom')} label="Scan another room" />
+      <BackButton onPress={() => navigation.reset({ index: 0, routes: [{ name: 'ScanRoom' }] })} label="Scan another room" />
 
       <View style={styles.main}>
         <ViewfinderFrame fill>
@@ -77,6 +77,18 @@ export default function FengShuiRatingScreen({
                 </View>
               </>
             )}
+
+            {hazardCount > 0 && (
+              <View style={styles.dangerSpots}>
+                <Button
+                  label="danger spots"
+                  onPress={() => {
+                    setDetailsOpen(false);
+                    navigation.goBack(); // back to the live camera, where the boxes are pinned
+                  }}
+                />
+              </View>
+            )}
           </ScrollView>
           <View style={styles.sheetFooter}>
             <Button label="close" onPress={() => setDetailsOpen(false)} />
@@ -99,5 +111,6 @@ const styles = StyleSheet.create({
   sheetTitle: { ...typography.title, color: colors.ink, marginTop: spacing.sm },
   summary: { ...typography.body, color: colors.ink },
   recs: { gap: spacing.md },
+  dangerSpots: { alignItems: 'center', paddingTop: spacing.md },
   sheetFooter: { padding: spacing.lg },
 });

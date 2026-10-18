@@ -4,5 +4,5 @@ import { FengShuiAnalysis } from '../types/fengshui.types';
 export type RootStackParamList = {
   Intro: undefined;
   ScanRoom: undefined;
-  FengShuiRating: { analysis: FengShuiAnalysis; previewImage: string };
+  FengShuiRating: { analysis: FengShuiAnalysis; previewImage: string; hazardCount: number };
 };

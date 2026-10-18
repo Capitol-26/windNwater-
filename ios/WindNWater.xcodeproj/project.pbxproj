@@ -7,16 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00D71FC917C43217890F709D /* ARScan.m in Sources */ = {isa = PBXBuildFile; fileRef = 320F30DA65ACBCA205E7EA0C /* ARScan.m */; };
 		0C80B921A6F3F58F76C31292 /* libPods-WindNWater.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-WindNWater.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		2C8456F66F34B8A02443BFC0 /* FloorHomography.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AA4B44488BDC626AA575C1 /* FloorHomography.m */; };
-		40996A2CDE6929E8658DA2B2 /* Homography.c in Sources */ = {isa = PBXBuildFile; fileRef = 3E5D94E62EE73D346EAAE973 /* Homography.c */; };
+		352A0989CFD636698FCB0B10 /* ARScanModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = C055D64414B0ACC5F37F648B /* ARScanModule.swift */; };
 		457C28C6DE99408E87A3A171 /* InstrumentSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 04D2979B04D34FDB9226DC22 /* InstrumentSans-Medium.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EE2CA45674006654EF /* SceneDelegate.swift */; };
 		78CD3146834344AC91A78678 /* InstrumentSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B2A8A7A92D424D809E6DD591 /* InstrumentSans-Regular.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		A65D1639B68A4E3280EBFC9A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		D27AC97D223EBEBCDB2F3D2E /* ARScanSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150634C08AAE2699AF9EB1D4 /* ARScanSession.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,16 +26,16 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = WindNWater/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = WindNWater/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = WindNWater/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		150634C08AAE2699AF9EB1D4 /* ARScanSession.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ARScanSession.swift; sourceTree = "<group>"; };
+		320F30DA65ACBCA205E7EA0C /* ARScan.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = ARScan.m; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-WindNWater.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WindNWater.debug.xcconfig"; path = "Target Support Files/Pods-WindNWater/Pods-WindNWater.debug.xcconfig"; sourceTree = "<group>"; };
-		3E5D94E62EE73D346EAAE973 /* Homography.c */ = {isa = PBXFileReference; includeInIndex = 1; path = Homography.c; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-WindNWater.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WindNWater.release.xcconfig"; path = "Target Support Files/Pods-WindNWater/Pods-WindNWater.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-WindNWater.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WindNWater.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = WindNWater/AppDelegate.swift; sourceTree = "<group>"; };
 		761780EE2CA45674006654EF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = WindNWater/SceneDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = WindNWater/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		B1AA4B44488BDC626AA575C1 /* FloorHomography.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FloorHomography.m; sourceTree = "<group>"; };
 		B2A8A7A92D424D809E6DD591 /* InstrumentSans-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "InstrumentSans-Regular.ttf"; path = "../assets/fonts/InstrumentSans-Regular.ttf"; sourceTree = "<group>"; };
-		D836C424EF2C3EA0530DA607 /* Homography.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = Homography.h; sourceTree = "<group>"; };
+		C055D64414B0ACC5F37F648B /* ARScanModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ARScanModule.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -59,7 +60,6 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
-				C8B138AC07A10F18EE621F26 /* Floor */,
 			);
 			name = WindNWater;
 			sourceTree = "<group>";
@@ -89,6 +89,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
 				C2CE8B69C2F2477FA3D0B883 /* Resources */,
+				99F42709CDD5F153A68387D4 /* ARScan */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -101,6 +102,17 @@
 				13B07F961A680F5B00A75B9A /* WindNWater.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		99F42709CDD5F153A68387D4 /* ARScan */ = {
+			isa = PBXGroup;
+			children = (
+				150634C08AAE2699AF9EB1D4 /* ARScanSession.swift */,
+				C055D64414B0ACC5F37F648B /* ARScanModule.swift */,
+				320F30DA65ACBCA205E7EA0C /* ARScan.m */,
+			);
+			name = ARScan;
+			path = WindNWater/ARScan;
 			sourceTree = "<group>";
 		};
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
@@ -120,17 +132,6 @@
 			);
 			name = Resources;
 			path = "";
-			sourceTree = "<group>";
-		};
-		C8B138AC07A10F18EE621F26 /* Floor */ = {
-			isa = PBXGroup;
-			children = (
-				3E5D94E62EE73D346EAAE973 /* Homography.c */,
-				B1AA4B44488BDC626AA575C1 /* FloorHomography.m */,
-				D836C424EF2C3EA0530DA607 /* Homography.h */,
-			);
-			name = Floor;
-			path = WindNWater/Floor;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -285,8 +286,9 @@
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */,
-				40996A2CDE6929E8658DA2B2 /* Homography.c in Sources */,
-				2C8456F66F34B8A02443BFC0 /* FloorHomography.m in Sources */,
+				D27AC97D223EBEBCDB2F3D2E /* ARScanSession.swift in Sources */,
+				352A0989CFD636698FCB0B10 /* ARScanModule.swift in Sources */,
+				00D71FC917C43217890F709D /* ARScan.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
