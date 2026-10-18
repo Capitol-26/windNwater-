@@ -8,7 +8,8 @@ export const colors = {
   inkSoft: 'rgba(0,0,0,0.62)',
   track: 'rgba(0,0,0,0.12)',
   dot: 'rgba(255,255,255,0.5)',
-  drafting: '#F5E6C8', // the pale sheet behind the room plan
+  hazardRed: '#EB3333', // AR boxes for blocked chi (the native view draws the same red)
+  hazardGreen: '#33CC59', // AR boxes for poison arrows
 } as const;
 
 // One earthen hue per feng shui element

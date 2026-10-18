@@ -1,6 +1,6 @@
 // IntroScreen.tsx — opening animation: the room settles in under the app name, then the camera opens
-import { useEffect } from 'react';
-import { Image, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Image, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Animated, {
   Easing,
@@ -14,6 +14,8 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import { Info } from 'phosphor-react-native';
+import AboutSheet from '../components/common/AboutSheet';
 import ScreenContainer from '../components/common/ScreenContainer';
 import { RootStackParamList } from '../navigation/navigation.types';
 import { colors } from '../theme/colors';
@@ -28,6 +30,8 @@ export default function IntroScreen({ navigation }: NativeStackScreenProps<RootS
   const { width } = useWindowDimensions();
   // The illustration bleeds past both screen edges, like in the design
   const artWidth = width * (475 / 390);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [paused, setPaused] = useState(false); // once the about sheet has been opened, the intro waits for it
 
   // After it lands, the room drifts up and down slowly
   const float = useSharedValue(0);
@@ -42,9 +46,10 @@ export default function IntroScreen({ navigation }: NativeStackScreenProps<RootS
         -1,
       ),
     );
+    if (paused) return;
     const timer = setTimeout(() => navigation.replace('ScanRoom'), HOLD_MS);
     return () => clearTimeout(timer);
-  }, [float, navigation]);
+  }, [float, navigation, paused]);
   const floatStyle = useAnimatedStyle(() => ({ transform: [{ translateY: float.value * -8 }] }));
 
   return (
@@ -71,7 +76,30 @@ export default function IntroScreen({ navigation }: NativeStackScreenProps<RootS
           </Animated.View>
         </Animated.View>
       </View>
-      <Animated.View entering={FadeIn.delay(HOLD_MS - 400).duration(400)} style={styles.curtain} pointerEvents="none" />
+      {!paused && <Animated.View entering={FadeIn.delay(HOLD_MS - 400).duration(400)} style={styles.curtain} pointerEvents="none" />}
+
+      <Animated.View entering={FadeIn.delay(1200).duration(500)} style={styles.about}>
+        <Pressable
+          onPress={() => {
+            setPaused(true);
+            setAboutOpen(true);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel="About windNwater"
+          hitSlop={12}
+          style={styles.aboutButton}>
+          <Info size={26} weight="bold" color={colors.ink} />
+          <Text style={styles.aboutText}>about</Text>
+        </Pressable>
+      </Animated.View>
+
+      <AboutSheet
+        visible={aboutOpen}
+        onClose={() => {
+          setAboutOpen(false);
+          navigation.replace('ScanRoom');
+        }}
+      />
     </ScreenContainer>
   );
 }
@@ -80,5 +108,8 @@ const styles = StyleSheet.create({
   main: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 32 },
   name: { flexDirection: 'row', justifyContent: 'center' },
   word: { ...typography.display, fontSize: 46, color: colors.ink },
+  about: { position: 'absolute', bottom: 28, left: 0, right: 0, alignItems: 'center' },
+  aboutButton: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  aboutText: { ...typography.button, fontSize: 22, lineHeight: 28, color: colors.ink },
   curtain: { ...StyleSheet.absoluteFill, backgroundColor: colors.sand },
 });
